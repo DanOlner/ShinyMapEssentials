@@ -25,6 +25,11 @@ la_colname_options <-
   meta$la$colnames[!omit_la_cols] 
 
 
+# input -------------------------------------------------------------------
+
+## source 
+
+
 
 # Define UI for random distribution app ----
 fluidPage(
@@ -107,7 +112,7 @@ fluidPage(
                   tabPanel("mapTab", leafletOutput("map", height = 1000)),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
                   tabPanel("Summary", verbatimTextOutput("summary")),
-                  tabPanel("Table", tableOutput("table"))
+                  tabPanel("Table", DT::dataTableOutput("table"))
       )
       
     )

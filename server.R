@@ -9,11 +9,25 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 zoomvalue = 6
 
 
+
+# inputs ------------------------------------------------------------------
+
+
 #Load all-LSOA map data
 lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
 #load local authority level summary map data
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
+# load in all
 
+frontiers_data <- 
+  readRDS('data/frontier borders layer.rds')
+
+lsoa_data_2 <- 
+  readRDS('data/lsoa layer.rds')
+ttwa_data <-
+  readRDS('data/ttwa 2011 layer.rds')
+
+# server.R ----------------------------------------------------------------
 
 
 function(input, output) {
@@ -146,8 +160,11 @@ function(input, output) {
   })
   
   # Generate an HTML table view of the data ----
-  output$table <- renderTable({
-    d()
+  source('table_widget.R')
+  output$table <- DT::renderDataTable({
+    table_widget(
+      ttwa_data %>% select(-geometry) 
+      )
   })
   
 }
