@@ -111,6 +111,7 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("mapTab", leafletOutput("map", height = 1000)),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
+                  tabPanel("plotTab", plotlyOutput("plot")),
                   tabPanel("Summary", verbatimTextOutput("summary")),
                   tabPanel("Table", DT::dataTableOutput("table"))
       )

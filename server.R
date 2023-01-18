@@ -172,6 +172,13 @@ function(input, output) {
     summary(map_df_no_geom())
   })
   
+  ## generate plot -----
+  source('plot_widgets.R')
+  output$plot <-
+    renderPlotly({
+      density_widget(data = la, xVar = input$la_varname_to_display_on_map)
+    })
+  
   # Generate an HTML table view of the data ----
   source('table_widget.R')
   output$table <- DT::renderDataTable({
