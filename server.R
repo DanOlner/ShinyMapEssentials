@@ -1,4 +1,12 @@
-#Based on https://shiny.rstudio.com/articles/tabsets.html
+# #Based on https://shiny.rstudio.com/articles/tabsets.html
+lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
+#load local authority level summary map data
+la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
+
+#Separate zoom value - copy to when changes from input$map_zoom
+#Why? because input$map_zoom is NULL on first loading
+#And this avoids having to do double null / length test
+zoomvalue = 6
 
 
 function(input, output) {
@@ -27,6 +35,10 @@ function(input, output) {
     #"input$MAPID_zoom is an integer that indicates the zoom level"
     #Is empty on initialisation
     #https://rstudio.github.io/leaflet/shiny.html
+    
+    #Can I set manually? (Is NULL on first load and length for if test is zero, see below)
+    #Newp, is read-only
+    #input$map_zoom = 6
     print(cat("Map zoom: ",input$map_zoom,"\n"))
     
     
@@ -44,7 +56,22 @@ function(input, output) {
   
   observeEvent(input$map_zoom, {
     
-    print("ping!")
+    zoomvalue = input$map_zoom
+    print(cat("Map zoom: ",zoomvalue,"\n"))
+    
+    #Hide based on zoom
+    #This code runs also in main map observe; must be way to avoid duplication
+    if(zoomvalue <= 9){
+      
+      leafletProxy("map") %>% hideGroup("lsoas")
+      leafletProxy("map") %>% showGroup("local authorities")
+      
+    } else {
+      
+      leafletProxy("map") %>% hideGroup("local authorities")
+      leafletProxy("map") %>% showGroup("lsoas")
+      
+    }
     
   })
   
@@ -55,7 +82,7 @@ function(input, output) {
     #Only static elements, observe below will do the dynamics
     leaflet() %>%
       addTiles() %>%
-      setView(lng = -2, lat = 53, zoom = 6) 
+      setView(lng = -2, lat = 53, zoom = 6)
     
   })
   
@@ -74,11 +101,33 @@ function(input, output) {
     mypalette <- colorNumeric(palette="YlOrRd", domain=map_df()$displaycolumn, na.color="transparent")
     #mypalette(c(45,43))
     
-    leafletProxy("map", data = map_df()) %>%
+    lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$Rank2019, na.color="transparent")
+    
+    
+    #Add local authorities AND lsoas and then selectively hide based on zoom (faster than loading each time?)
+    leafletProxy("map") %>%
       clearShapes() %>% 
       addPolygons(
-        fillColor = ~mypalette(displaycolumn)
+        data = map_df(),
+        fillColor = ~mypalette(displaycolumn),
+        color = 'grey',
+        weight = 3,
+        opacity = 0.7,
+        group = "local authorities"
+      ) %>% 
+      addPolygons(
+        data = lsoa,
+        fillColor = ~lsoapalette(Rank2019),
+        color = 'black',
+        weight = 1,
+        opacity = 0.7,
+        group = "lsoas"
       )
+    
+    
+    #Initial zoom of 6, just show local authorities  
+    leafletProxy("map") %>% hideGroup("lsoas")
+      
      
   })
   

@@ -8,9 +8,8 @@ library(leaflet)
 #Load data in UI so we can use the LA column names to set an option to select which to view on map
 
 #RDS for these two is ~0.2 seconds vs ~10 seconds if loading from geojson directly
-#Load all-LSOA map data
-lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
-#load local authority level summary map data
+
+#load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
 
@@ -45,7 +44,7 @@ fluidPage(
       
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
-                  tabPanel("mapTab", leafletOutput("map")),
+                  tabPanel("mapTab", leafletOutput("map", height = 1000)),
                   tabPanel("Summary", verbatimTextOutput("summary")),
                   tabPanel("Table", tableOutput("table"))
       )

@@ -67,5 +67,23 @@ saveRDS(LAs.w.data, 'data/localauthoritymap_w_IMDsummarydata.rds')
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECKING FILE CONTENTS----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#400mb
+lsoa <- readRDS('data/lsoa layer.rds')
+
+#23mb
+lsoa2 <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
+
+#Is size diff due to generalisation? Can check by re-attaching 1 to copy of 2
+#Oh except 2 is just England, that won't work...
+
+plot(st_geometry(lsoa[lsoa$zoneID=="E01000001",]))
+plot(st_geometry(lsoa2[lsoa2$LSOAcode=="E01000001",]))
+
+
+
 
 
