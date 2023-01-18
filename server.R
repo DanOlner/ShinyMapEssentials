@@ -9,6 +9,13 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 zoomvalue = 6
 
 
+#Load all-LSOA map data
+lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
+#load local authority level summary map data
+la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
+
+
+
 function(input, output) {
   
   #User can choose which data column will be shown
