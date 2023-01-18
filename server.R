@@ -40,6 +40,8 @@ areas_no_geom <-
   la
 st_geometry(areas_no_geom) <- NULL
 
+
+
 # server.R ----------------------------------------------------------------
 
 
@@ -124,25 +126,25 @@ function(input, output) {
 
   
   
-  #
+
   observe({
-    
+
     #Change map when variable changed
-    #See https://rstudio.github.io/leaflet/shiny.html - 
+    #See https://rstudio.github.io/leaflet/shiny.html -
     #Avoids redrawing whole map after each change
-   
+
     # Create a color palette for the map
     #https://rstudio.github.io/leaflet/choropleths.html
     #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
     mypalette <- colorNumeric(palette="YlOrRd", domain=map_df()$displaycolumn, na.color="transparent")
     #mypalette(c(45,43))
-    
-    lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$Rank2019, na.color="transparent")
-    
-    
+
+#    lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$Rank2019, na.color="transparent")
+
+
     #Add local authorities AND lsoas and then selectively hide based on zoom (faster than loading each time?)
     leafletProxy("map") %>%
-      clearShapes() %>% 
+      clearShapes() %>%
       addPolygons(
         data = map_df(),
         fillColor = ~mypalette(displaycolumn),
@@ -150,7 +152,7 @@ function(input, output) {
         weight = 3,
         opacity = 0.7,
         group = "local authorities"
-      ) #%>% 
+      ) #%>%
       # addPolygons(
       #   data = lsoa,
       #   fillColor = ~lsoapalette(Rank2019),
@@ -159,15 +161,19 @@ function(input, output) {
       #   opacity = 0.7,
       #   group = "lsoas"
       # )
-    
-    
-    #Initial zoom of 6, just show local authorities  
+
+
+    #Initial zoom of 6, just show local authorities
     #leafletProxy("map") %>% hideGroup("lsoas")
-      
-     
+
+
   })
+
+  ## Generaate reactive inputs ----
   
-  
+  output$inputs <- renderPrint({
+    print(input)
+  })
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
