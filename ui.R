@@ -20,6 +20,33 @@ la_colname_options <- names(la)[3:20]
 # Define UI for random distribution app ----
 fluidPage(
   
+  #For floating selection widgets above map
+  #https://stackoverflow.com/a/42292858
+  # tags$head(
+  #   tags$style(
+  #     HTML(
+  #       '
+  #           .outer {
+  #               position: fixed;
+  #               top: 80px;
+  #               left: 0;
+  #               right: 0;
+  #               bottom: 0;
+  #               overflow: hidden;
+  #               padding: 0;
+  #           }
+  # 
+  #           #controls-filters {
+  #               background-color: white;
+  #               border:none;
+  #               padding: 10px 10px 10px 10px;
+  #               z-index:150;
+  #           }
+  #           '
+  #     )
+  #   )
+  # ),
+  
   # App title ----
   titlePanel("Tabsets"),
   
@@ -28,7 +55,7 @@ fluidPage(
     
     # Sidebar panel for inputs ----
     sidebarPanel(
-      
+
       selectInput(
         inputId = 'la_varname_to_display_on_map',
         label = 'local authority variable to display on map',
@@ -36,15 +63,40 @@ fluidPage(
         selected = 'mean2019',
         selectize = T
         )
-      
+
     ),
     
+    #Floating panel above - currently not showing above the map, will have to fiddle with order
+    #https://stackoverflow.com/a/42292858
+    # absolutePanel(
+    #   id = "PANEL_la_varname_to_display_on_map",
+    #   class = "panel panel-default",
+    #   fixed = TRUE,
+    #   draggable = TRUE,
+    #   top = 100,
+    #   left = "auto",
+    #   right = 20,
+    #   bottom = "auto",
+    #   width = 330,
+    #   height = "auto",
+    #   selectInput(
+    #     inputId = 'la_varname_to_display_on_map',
+    #     label = 'local authority variable to display on map',
+    #     choices = la_colname_options,
+    #     selected = 'mean2019',
+    #     selectize = T
+    #   ),
+    #   actionButton("zoomer", "reset zoom")
+    # ),
+    
+
     # Main panel for displaying outputs ----
     mainPanel(
       
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
                   tabPanel("mapTab", leafletOutput("map", height = 1000)),
+                  # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
                   tabPanel("Summary", verbatimTextOutput("summary")),
                   tabPanel("Table", tableOutput("table"))
       )

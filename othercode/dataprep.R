@@ -5,7 +5,7 @@
 #This is if the full dataset is on the server side. I can check what difference it makes to speed to load each individually.
 library(tidyverse)
 library(sf)
-
+library(tmap)
 
 #From the IMD project, looking in D:\Dropbox\imd2019/imd2019.R
 #oK, that's the right one for LSOA level, with all IMD domains in (just for 2019 though, we may have one later with both?)
@@ -66,22 +66,72 @@ saveRDS(imd2019.geo.cleannames, 'data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
 saveRDS(LAs.w.data, 'data/localauthoritymap_w_IMDsummarydata.rds')
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#ADD TTWA NAMES TO LSOAS MANUALLY----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~
-#CHECKING FILE CONTENTS----
-#~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Using original TTWA file with slightly better matching boundaries to TTWA
+ttwa <- st_read('../../MapPolygons/GreatBritain/2001/TTWAs/greatBritainTTWAs.shp')
 
-#400mb
+#LSOAs via https://github.com/life-at-the-frontier/detect-uk-frontiers/tree/test-run/output
+#Some NAs and incorrect TTWA names
+#Will need fixed for subsetting into groups
 lsoa <- readRDS('data/lsoa layer.rds')
 
-#23mb
-lsoa2 <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
+#Now what's going on with the LSOAs? We've got duplicate IDs...
+#34753 IDs out of 39030 rows
+length(unique(lsoa$zoneID))
 
-#Is size diff due to generalisation? Can check by re-attaching 1 to copy of 2
-#Oh except 2 is just England, that won't work...
+#OK, I think (see randomDataChecks) there was multiple matching of single LSOAs to different TTWAs
+#They're the same poloygon in each case, I'm pretty sure
+#So we just need to keep single IDs (any of them, and forget about the current TTWA match)
+lsoa <- lsoa %>% distinct(zoneID, .keep_all = T)
 
-plot(st_geometry(lsoa[lsoa$zoneID=="E01000001",]))
-plot(st_geometry(lsoa2[lsoa2$LSOAcode=="E01000001",]))
+#Check none missing visually in QGIS... tick
+#st_write(lsoa,'local/lsoa_unique_check.shp')
+
+
+#Ignore current LSOA ttwa labels - mostly right but some errors.
+#Might as well do all fresh
+
+#Get intersection, for keeping only those with largest areas for each LSOA
+#Which will then be the correct TTWA
+lsoa.intersect <- lsoa %>% st_intersection(ttwa)
+
+#Drop previous TTWA name match
+lsoa.intersect <- lsoa.intersect %>% select(-ttwa)
+
+#Add area
+lsoa.intersect$area <- st_area(lsoa.intersect)
+
+#Pick max area per group, shouldn't have any duplicated
+#Correct, is now same number of rows as original
+lsoa.largest <- lsoa.intersect %>% 
+  group_by(zoneID) %>% 
+  top_n(n=1, wt = area) %>% 
+  select(-area, -LABEL) %>% 
+  rename(ttwa = NAME)
+
+#That's the LSOA file we need - right number of rows, now with TTWA
+#Though it's quite a bit bigger?
+# saveRDS(lsoa.largest,'data/lsoa_layer_w_ttwalookup.rds')
+
+#Can we merge into the original to keep smaller?
+lsoa.merge <- lsoa %>% select(-ttwa) %>% 
+  left_join(lsoa.largest %>% st_set_geometry(NULL) %>% select(zoneID,ttwa),by = 'zoneID')
+
+#Yup, half the size. Huh.
+saveRDS(lsoa.merge,'data/lsoa_layer_w_ttwalookup.rds')
+
+#Final check... tick
+#st_write(lsoa.merge,'local/lsoa_merge_check.shp')
+
+#Tick
+table(unique(lsoa.merge$ttwa) %in% ttwa$NAME)
+
+
+
+
 
 
 
