@@ -34,6 +34,12 @@ la <-
     )
 
 
+# no geom la --------------------------------------------------------------
+
+areas_no_geom <-
+  la
+st_geometry(areas_no_geom) <- NULL
+
 # server.R ----------------------------------------------------------------
 
 
@@ -55,18 +61,7 @@ function(input, output) {
     
   })
   
-  ## map_no_geom 
-  map_df_no_geom = reactive({
-    
-    x <- map_df()
-    
-    st_geometry(x) <- NULL
 
-    return(x)
-    
-  })
-  
-  
   #Check what map_df is producing
   observeEvent(map_df(), {
     
@@ -95,38 +90,38 @@ function(input, output) {
     
   })
   
-  observeEvent(input$map_zoom, {
-    
-    zoomvalue = input$map_zoom
-    print(cat("Map zoom: ",zoomvalue,"\n"))
-    
-    #Hide based on zoom
-    #This code runs also in main map observe; must be way to avoid duplication
-    if(zoomvalue <= 9){
-      
-      leafletProxy("map") %>% hideGroup("lsoas")
-      leafletProxy("map") %>% showGroup("local authorities")
-      
-    } else {
-      
-      leafletProxy("map") %>% hideGroup("local authorities")
-      leafletProxy("map") %>% showGroup("lsoas")
-      
-    }
-    
-  })
+  # observeEvent(input$map_zoom, {
+  #   
+  #   zoomvalue = input$map_zoom
+  #   print(cat("Map zoom: ",zoomvalue,"\n"))
+  #   
+  #   #Hide based on zoom
+  #   #This code runs also in main map observe; must be way to avoid duplication
+  #   if(zoomvalue <= 9){
+  #     
+  #     leafletProxy("map") %>% hideGroup("lsoas")
+  #     leafletProxy("map") %>% showGroup("local authorities")
+  #     
+  #   } else {
+  #     
+  #     leafletProxy("map") %>% hideGroup("local authorities")
+  #     leafletProxy("map") %>% showGroup("lsoas")
+  #     
+  #   }
+  #   
+  # })
   
   #Initial map output creation (static elements only, dynamic changes in observes / leafletproxy)
   #See https://rstudio.github.io/leaflet/shiny.html
   output$map <- renderLeaflet({
-    
+
     #Only static elements, observe below will do the dynamics
     leaflet() %>%
       addTiles() %>%
       setView(lng = -2, lat = 53, zoom = 6)
-    
+
   })
-  
+
   
   
   #
@@ -155,19 +150,19 @@ function(input, output) {
         weight = 3,
         opacity = 0.7,
         group = "local authorities"
-      ) %>% 
-      addPolygons(
-        data = lsoa,
-        fillColor = ~lsoapalette(Rank2019),
-        color = 'black',
-        weight = 1,
-        opacity = 0.7,
-        group = "lsoas"
-      )
+      ) #%>% 
+      # addPolygons(
+      #   data = lsoa,
+      #   fillColor = ~lsoapalette(Rank2019),
+      #   color = 'black',
+      #   weight = 1,
+      #   opacity = 0.7,
+      #   group = "lsoas"
+      # )
     
     
     #Initial zoom of 6, just show local authorities  
-    leafletProxy("map") %>% hideGroup("lsoas")
+    #leafletProxy("map") %>% hideGroup("lsoas")
       
      
   })
@@ -176,21 +171,21 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(map_df_no_geom())
+    summary(areas_no_geom)
   })
   
   ## generate plot -----
   source('plot_widgets.R')
   output$plot <-
     renderPlotly({
-      density_widget(data = la, xVar = input$la_varname_to_display_on_map)
+      density_widget(data = areas_no_geom, xVar = input$la_varname_to_display_on_map)
     })
   
   # Generate an HTML table view of the data ----
   source('table_widget.R')
   output$table <- DT::renderDataTable({
     table_widget(
-      map_df_no_geom()
+      areas_no_geom
       )
   })
   
