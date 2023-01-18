@@ -32,6 +32,7 @@ ttwa_data <-
 
 function(input, output) {
   
+  ## Data -- map_df() is a function which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
   map_df = reactive({
@@ -46,6 +47,18 @@ function(input, output) {
     return(x)
     
   })
+  
+  ## map_no_geom 
+  map_df_no_geom = reactive({
+    
+    x <- map_df()
+    
+    st_geometry(x) <- NULL
+
+    return(x)
+    
+  })
+  
   
   #Check what map_df is producing
   observeEvent(map_df(), {
@@ -156,14 +169,14 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(d())
+    summary(map_df_no_geom())
   })
   
   # Generate an HTML table view of the data ----
   source('table_widget.R')
   output$table <- DT::renderDataTable({
     table_widget(
-      ttwa_data %>% select(-geometry) 
+      map_df_no_geom()
       )
   })
   
