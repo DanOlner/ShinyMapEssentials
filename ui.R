@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(sf)
 library(leaflet)
+library(plotly)
 
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
@@ -12,18 +13,9 @@ library(leaflet)
 #load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
-meta <- 
-  'data/metadata.rds' %>%
-  readRDS()
-
 
 #LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-
-omit_la_cols <- 
-  meta$la$colnames %in% c('NAME', 'CODE', 'geometry')
-la_colname_options <- 
-  meta$la$colnames[!omit_la_cols] 
-
+la_colname_options <- names(la)[3:20]
 
 # fake data ---------------------------------------------------------------
 

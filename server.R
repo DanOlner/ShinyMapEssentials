@@ -1,3 +1,7 @@
+
+# inputs ------------------------------------------------------------------
+
+
 # #Based on https://shiny.rstudio.com/articles/tabsets.html
 lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
 #load local authority level summary map data
@@ -10,26 +14,17 @@ zoomvalue = 6
 
 
 
-# inputs ------------------------------------------------------------------
-
-
-#Load all-LSOA map data
-lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
-#load local authority level summary map data
-la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
-# load in all
-
-frontiers_data <- 
-  readRDS('data/frontier borders layer.rds')
-
-lsoa_data_2 <- 
-  readRDS('data/lsoa layer.rds')
-ttwa_data <-
-  readRDS('data/ttwa 2011 layer.rds')
-
+# frontiers_data <- 
+#   readRDS('data/frontier borders layer.rds')
+# 
+# lsoa_data_2 <- 
+#   readRDS('data/lsoa layer.rds')
+# ttwa_data <-
+#   readRDS('data/ttwa 2011 layer.rds')
+# 
 
 # fake data for app -------------------------------------------------------
-la
+
 la <-
   la %>%
   mutate(
