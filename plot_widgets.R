@@ -13,3 +13,4 @@ density_widget <-
 
 #https://stackoverflow.com/questions/5106782/use-of-ggplot-within-another-function-in-r
 # density_widget(la, 'lowest2015')
+

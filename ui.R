@@ -25,6 +25,14 @@ la_colname_options <-
   meta$la$colnames[!omit_la_cols] 
 
 
+# fake data ---------------------------------------------------------------
+
+la_colname_options <-
+  c(la_colname_options,
+    'IMD_rank',
+    'Dissimilarity_index',
+    'Other_index'
+  )
 # input -------------------------------------------------------------------
 
 ## source 

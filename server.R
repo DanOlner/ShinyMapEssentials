@@ -27,6 +27,18 @@ lsoa_data_2 <-
 ttwa_data <-
   readRDS('data/ttwa 2011 layer.rds')
 
+
+# fake data for app -------------------------------------------------------
+la
+la <-
+  la %>%
+  mutate(
+    IMD_rank = sample.int(length(NAME), length(NAME)),
+    Dissimilarity_index = sample.int(length(NAME), length(NAME)),
+    Other_index = sample.int(length(NAME), length(NAME))
+    )
+
+
 # server.R ----------------------------------------------------------------
 
 
