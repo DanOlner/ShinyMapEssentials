@@ -119,9 +119,16 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("mapTab", leafletOutput("map", height = 1000)),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
-                  tabPanel("plotTab", plotlyOutput("plot")),
-                  tabPanel("Summary", verbatimTextOutput("summary")),
-                  tabPanel("Table", DT::dataTableOutput("table"))
+  #                tabPanel("plotTab", plotlyOutput("plot")),
+                  tabPanel("plot and summary", 
+                           fluidRow(
+                             column(4, verbatimTextOutput("summary"))
+                             ),
+                           fluidRow(
+                             column(12, plotlyOutput("plot"))
+                           )
+                  ),
+                  tabPanel("table",  DT::dataTableOutput("table"))
       )
       
     )
