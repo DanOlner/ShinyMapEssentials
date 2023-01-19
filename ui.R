@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(sf)
 library(leaflet)
+library(plotly)
 
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
@@ -15,6 +16,19 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
 #LA column names to be able to choose from (can later add lookups for better names, explanations etc)
 la_colname_options <- names(la)[3:20]
+
+# fake data ---------------------------------------------------------------
+
+la_colname_options <-
+  c(la_colname_options,
+    'IMD_rank',
+    'Dissimilarity_index',
+    'Other_index'
+  )
+# input -------------------------------------------------------------------
+
+## source 
+
 
 
 # Define UI for random distribution app ----
@@ -97,8 +111,16 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("mapTab", leafletOutput("map", height = 1000)),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
-                  tabPanel("Summary", verbatimTextOutput("summary")),
-                  tabPanel("Table", tableOutput("table"))
+  #                tabPanel("plotTab", plotlyOutput("plot")),
+                  tabPanel("plot and summary", 
+                           fluidRow(
+                             column(4, verbatimTextOutput("summary"))
+                             ),
+                           fluidRow(
+                             column(12, plotlyOutput("plot"))
+                           )
+                  ),
+                  tabPanel("table",  DT::dataTableOutput("table"))
       )
       
     )
