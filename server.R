@@ -1,3 +1,7 @@
+
+# inputs ------------------------------------------------------------------
+
+
 # #Based on https://shiny.rstudio.com/articles/tabsets.html
 lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
 #load local authority level summary map data
@@ -9,8 +13,33 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 zoomvalue = 6
 
 
+
+# frontiers_data <- 
+#   readRDS('data/frontier borders layer.rds')
+# 
+# lsoa_data_2 <- 
+#   readRDS('data/lsoa layer.rds')
+# ttwa_data <-
+#   readRDS('data/ttwa 2011 layer.rds')
+# 
+
+# fake data for app -------------------------------------------------------
+
+la <-
+  la %>%
+  mutate(
+    IMD_rank = sample.int(length(NAME), length(NAME)),
+    Dissimilarity_index = sample.int(length(NAME), length(NAME)),
+    Other_index = sample.int(length(NAME), length(NAME))
+    )
+
+
+# server.R ----------------------------------------------------------------
+
+
 function(input, output) {
   
+  ## Data -- map_df() is a function which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
   map_df = reactive({
@@ -25,6 +54,18 @@ function(input, output) {
     return(x)
     
   })
+  
+  ## map_no_geom 
+  map_df_no_geom = reactive({
+    
+    x <- map_df()
+    
+    st_geometry(x) <- NULL
+
+    return(x)
+    
+  })
+  
   
   #Check what map_df is producing
   observeEvent(map_df(), {
@@ -135,12 +176,22 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(d())
+    summary(map_df_no_geom())
   })
   
+  ## generate plot -----
+  source('plot_widgets.R')
+  output$plot <-
+    renderPlotly({
+      density_widget(data = la, xVar = input$la_varname_to_display_on_map)
+    })
+  
   # Generate an HTML table view of the data ----
-  output$table <- renderTable({
-    d()
+  source('table_widget.R')
+  output$table <- DT::renderDataTable({
+    table_widget(
+      map_df_no_geom()
+      )
   })
   
 }
