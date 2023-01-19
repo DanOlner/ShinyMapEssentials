@@ -120,6 +120,14 @@ lsoa.largest <- lsoa.intersect %>%
 lsoa.merge <- lsoa %>% select(-ttwa) %>% 
   left_join(lsoa.largest %>% st_set_geometry(NULL) %>% select(zoneID,ttwa),by = 'zoneID')
 
+#Convert to long lat so will work with leaflet
+lsoa.merge <- st_transform(lsoa.merge, "EPSG:4326")
+
+#Add proportion non UK variable
+lsoa.merge <- lsoa.merge %>% 
+  mutate(UKborn_percent = (ukBorn/allResidents)*100)
+
+
 #Yup, half the size. Huh.
 saveRDS(lsoa.merge,'data/lsoa_layer_w_ttwalookup.rds')
 

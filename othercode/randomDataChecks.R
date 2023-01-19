@@ -92,6 +92,35 @@ lsoa <- lsoa %>%
   mutate(count = n())
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#TEST SPEED OF RELOADING LSOA DATA VS SUBSETTING----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#For getting a single TTWA's worth of LSOA data (using data processed in dataprep.R/ADD TTWA NAMES TO LSOAS MANUALLY)
+#Is it faster to load in a saved subset of a single TTWA's worth 
+#Or subset directly from larger file? (Loading in the full file isn't time consuming I don't think)
+
+#Will then use to pick out the single focused TTWA in the app (rather than add all to map and hide/show)
+
+lsoa <- readRDS('data/lsoa_layer_w_ttwalookup.rds')
+
+#Subset a sample and save to test. London has 5541 LSOAs so is reasonable max test
+saveRDS(lsoa %>% filter(ttwa=='London'), 'local/londonlsoattwatest.rds')
+
+x <- proc.time()
+for(i in 1:100) testload <- readRDS('local/londonlsoattwatest.rds')
+proc.time() - x
+
+#vs just subsetting
+x <- proc.time()
+for(i in 1:100) testload <- lsoa %>% filter(ttwa=='London')
+proc.time() - x 
+
+#Not a radical difference - ~2 seconds for loading 100 vs 0.8 seconds for subsetting 100
+#dplyr filter is one of the faster methods, from googling (cf. data.table but we can't use that I don't think, and is overkill)
+
+
+
 
 
 

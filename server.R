@@ -3,7 +3,7 @@
 
 
 # #Based on https://shiny.rstudio.com/articles/tabsets.html
-lsoa <- readRDS('data/LSOAs_plus_IMD2015_19_plusLAlookup.rds')
+lsoa <- readRDS('data/lsoa_layer_w_ttwalookup.rds')
 #load local authority level summary map data
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
@@ -11,6 +11,10 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 #Why? because input$map_zoom is NULL on first loading
 #And this avoids having to do double null / length test
 zoomvalue = 6
+
+#Did the zoom scale change enough to shift between lop level and LSOA data?
+#If so, don't redraw 
+didzoomlevelforredrawchange = FALSE
 
 
 
@@ -104,13 +108,33 @@ function(input, output) {
     #This code runs also in main map observe; must be way to avoid duplication
     if(zoomvalue <= 9){
       
-      leafletProxy("map") %>% hideGroup("lsoas")
-      leafletProxy("map") %>% showGroup("local authorities")
+      didzoomlevelforredrawchange <<- FALSE
       
-    } else {
+      leafletProxy("map") %>% showGroup("local authorities")
+      leafletProxy("map") %>% clearGroup("lsoas")
+      
+      lastzoomvalue = zoomvalue
+      
+    } else if(!didzoomlevelforredrawchange)  {
+      
+      #Set outside for loop scope
+      didzoomlevelforredrawchange <<- TRUE
       
       leafletProxy("map") %>% hideGroup("local authorities")
-      leafletProxy("map") %>% showGroup("lsoas")
+      
+      lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$UKborn_percent, na.color="transparent")
+      
+      leafletProxy('map')%>% 
+        addPolygons(
+          # data = lsoa %>% filter(ttwa=='Sheffield & Rotherham'),
+          data = lsoa %>% filter(ttwa=='London'),
+          fillColor = ~lsoapalette(UKborn_percent),
+          color = 'black',
+          weight = 0.5,
+          opacity = 1,
+          fillOpacity = 0.5,
+          group = "lsoas"
+        )
       
     }
     
@@ -140,9 +164,6 @@ function(input, output) {
     #https://rstudio.github.io/leaflet/choropleths.html
     #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
     mypalette <- colorNumeric(palette="YlOrRd", domain=map_df()$displaycolumn, na.color="transparent")
-    #mypalette(c(45,43))
-    
-    lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$Rank2019, na.color="transparent")
     
     
     #Add local authorities AND lsoas and then selectively hide based on zoom (faster than loading each time?)
@@ -155,19 +176,7 @@ function(input, output) {
         weight = 3,
         opacity = 0.7,
         group = "local authorities"
-      ) %>% 
-      addPolygons(
-        data = lsoa,
-        fillColor = ~lsoapalette(Rank2019),
-        color = 'black',
-        weight = 1,
-        opacity = 0.7,
-        group = "lsoas"
-      )
-    
-    
-    #Initial zoom of 6, just show local authorities  
-    leafletProxy("map") %>% hideGroup("lsoas")
+      ) 
       
      
   })
