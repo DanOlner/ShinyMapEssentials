@@ -13,15 +13,17 @@ library(plotly)
 #load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
+#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
+#SETTING TO TTWA FOR NOW (IN SERVER)
+
 
 #LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-la_colname_options <- names(la)[3:20]
+# toplevel_colname_options <- names(la)[3:20]
 
 # fake data ---------------------------------------------------------------
 
-la_colname_options <-
-  c(la_colname_options,
-    'IMD_rank',
+toplevel_colname_options <-
+  c('IMD_rank',
     'Dissimilarity_index',
     'Other_index'
   )
@@ -71,10 +73,10 @@ fluidPage(
     sidebarPanel(
 
       selectInput(
-        inputId = 'la_varname_to_display_on_map',
-        label = 'local authority variable to display on map',
-        choices = la_colname_options,
-        selected = 'mean2019',
+        inputId = 'toplevel_varname_to_display_on_map',
+        label = 'top level geog variable to display on map',
+        choices = toplevel_colname_options,
+        selected = 'IMD_rank',
         selectize = T
         )
 
