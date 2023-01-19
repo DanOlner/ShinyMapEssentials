@@ -52,12 +52,15 @@ function(input, output) {
   get_value <-
     reactive({
       input %>% glimpse() %>% print
-      input$la_varname_to_display_on_map
+
+      return(input$area_chosen)
     })
   
+
+
   output$pick1 <-
-    renderPrint({
-      get_value()
+    renderText({
+      paste('Example of reactive write up. Value is', get_value())
     })
     
 

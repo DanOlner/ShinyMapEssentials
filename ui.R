@@ -1,11 +1,3 @@
-library(shiny)
-library(tidyverse)
-library(sf)
-library(leaflet)
-library(plotly)
-library(bslib)
-library(knitr)
-
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
 #Load data in UI so we can use the LA column names to set an option to select which to view on map
@@ -27,6 +19,10 @@ la_colname_options <-
     'Dissimilarity_index',
     'Other_index'
   )
+
+area_options <- 
+  la$NAME %>% unique
+
 # ui elements  --------------------------------------------------------------
 
 map_input_panel <-
@@ -41,19 +37,36 @@ map_input_panel <-
   }
 
 
+summary_input_panel <-
+  function(){
+    selectInput(
+      inputId = 'area_chosen',
+      label = 'Area to summarise',
+      choices = area_options,
+#      selected = 'Bedford',
+      selectize = T
+    )
+  }
+
+summary_input_panel()
 about_tab_panel <- 
-  function(id){
-    tabPanel(id,  
+  function(title){
+    tabPanel(title,  
              fluidRow(
                column(width = 12, includeMarkdown("./assets/about.md"), offset = 3)
                )
     )
   }
 
+
 summary_panel <-
-  function(id){
+  function(title){
     tabPanel(
-      id,
+      title,
+      fluidRow(12, summary_input_panel()), # we can name elemnts for more clarity
+      
+      
+      
       fluidRow(
         column(width = 4, verbatimTextOutput("summary")),
         column(width = 7, includeMarkdown("./assets/explain summary 1.md"), offset = 1)
@@ -66,9 +79,10 @@ summary_panel <-
   }
 
 diag_panel <-
-  function(id){
-    tabPanel(id,
-             fluidRow(12, verbatimTextOutput('pick1') ),
+  function(title){
+    tabPanel(title,
+             
+             fluidRow(textOutput('pick1') )
              )
   }
 
