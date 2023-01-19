@@ -3,6 +3,7 @@ library(tidyverse)
 library(sf)
 library(leaflet)
 library(plotly)
+library(bslib)
 
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
@@ -63,6 +64,9 @@ fluidPage(
   
   # App title ----
   titlePanel("Tabsets"),
+  
+  ## theme to look diff
+  theme = bs_theme(version = 5), 
   
 
     ## create a function for the input slider
