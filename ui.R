@@ -25,9 +25,7 @@ la_colname_options <-
     'Dissimilarity_index',
     'Other_index'
   )
-# input -------------------------------------------------------------------
-
-## source 
+# ui elements  --------------------------------------------------------------
 
 map_input_panel <-
   function(){
@@ -38,6 +36,25 @@ map_input_panel <-
     selected = 'mean2019',
     selectize = T
   )
+  }
+
+
+about_tab_panel <- 
+  function(id){
+    tabPanel(id,  verbatimTextOutput("inputs"))
+  }
+
+summary_panel <-
+  function(id){
+    tabPanel(
+      id,
+      fluidRow(
+        column(4, verbatimTextOutput("summary"))
+      ),
+      fluidRow(
+        column(12, plotlyOutput("plot"))
+      )
+    )
   }
 
 
@@ -90,6 +107,8 @@ fluidPage(
 
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
+                  about_tab_panel('About'),
+                  
                   tabPanel("mapTab", 
                            sidebarLayout(
                              sidebarPanel(map_input_panel()),
@@ -97,17 +116,8 @@ fluidPage(
                            ),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
   #                tabPanel("plotTab", plotlyOutput("plot")),
-                  tabPanel("plot and summary", 
-                           fluidRow(
-                             column(4, verbatimTextOutput("summary"))
-                             ),
-                           fluidRow(
-                             column(12, plotlyOutput("plot"))
-                           )
-                  ),
-                  tabPanel("checkMe",  verbatimTextOutput("inputs"))
+  summary_panel('Summary and plots')
+                  )                
       )
       
     
-  
-)
