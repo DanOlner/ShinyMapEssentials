@@ -47,11 +47,17 @@ st_geometry(areas_no_geom) <- NULL
 
 function(input, output) {
   
-  ## What people have picked
+  ## Trying to see what has been print
+  
+  get_value <-
+    reactive({
+      input %>% glimpse() %>% print
+      input$la_varname_to_display_on_map
+    })
   
   output$pick1 <-
-    renderText({
-      input$la_varname_to_display_on_map
+    renderPrint({
+      get_value()
     })
     
 

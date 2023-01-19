@@ -60,12 +60,16 @@ summary_panel <-
       ),
       fluidRow(
         column(12, plotlyOutput("plot"))
-      ),
-      fluidRow(
-        textOutput('pick1')
-      ),
+      )
       
     )
+  }
+
+diag_panel <-
+  function(id){
+    tabPanel(id,
+             fluidRow(12, verbatimTextOutput('pick1') ),
+             )
   }
 
 
@@ -130,7 +134,8 @@ fluidPage(
                            ),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
   #                tabPanel("plotTab", plotlyOutput("plot")),
-  summary_panel('Summary and plots')
+                  summary_panel('Summary and plots'),
+  diag_panel('diagnostics')
                   )                
       )
       
