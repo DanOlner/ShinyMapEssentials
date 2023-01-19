@@ -28,6 +28,7 @@ zoomvalue = 6
 la <-
   la %>%
   mutate(
+    frontier_rank = sample.int(length(NAME), length(NAME)),
     IMD_rank = sample.int(length(NAME), length(NAME)),
     Dissimilarity_index = sample.int(length(NAME), length(NAME)),
     Other_index = sample.int(length(NAME), length(NAME))
@@ -47,22 +48,30 @@ st_geometry(areas_no_geom) <- NULL
 
 function(input, output) {
   
-  ## Trying to see what has been print
+  ## Example write up 
   
-  get_value <-
+  get_area_stats <-
     reactive({
-      input %>% glimpse() %>% print
-
-      return(input$area_chosen)
+      la %>% filter(NAME == input$area_chosen)
     })
   
-
-
-  output$pick1 <-
+  output$write1 <-
     renderText({
-      paste('Example of reactive write up. Value is', get_value())
+      paste(
+        'This document is a worked example of the social frontier analysis used in Dean et al. and the Czech paper as applied to',
+        input$area_chosen,
+        'The goal is to give a quick summary of the method and present interactive results for',
+        input$area_chosen,
+        'The latter is important for judging how accurate the routine is at guessing what where we intuitively imagine frontiers to be.',
+        
+        'We use data on the number of foreign-born residents in each LSOA.', 
+        'There are',
+        'XXX',
+        'LSOAs'
+        )
     })
     
+
 
   ## Data -- map_df() is a function which returns data to be used elsewhere
   #User can choose which data column will be shown
@@ -201,7 +210,7 @@ function(input, output) {
   source('plot_widgets.R')
   output$plot <-
     renderPlotly({
-      density_widget(data = areas_no_geom, xVar = input$la_varname_to_display_on_map)
+      scatter_widget(data = la)
     })
   
   # Generate an HTML table view of the data ----

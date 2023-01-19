@@ -15,6 +15,7 @@ la_colname_options <- names(la)[3:20]
 
 la_colname_options <-
   c(la_colname_options,
+    'frontier_rank',
     'IMD_rank',
     'Dissimilarity_index',
     'Other_index'
@@ -48,12 +49,11 @@ summary_input_panel <-
     )
   }
 
-summary_input_panel()
 about_tab_panel <- 
   function(title){
     tabPanel(title,  
              fluidRow(
-               column(width = 12, includeMarkdown("./assets/about.md"), offset = 3)
+               column(width = 11, includeMarkdown("./assets/about.md"), offset = 1)
                )
     )
   }
@@ -63,16 +63,17 @@ summary_panel <-
   function(title){
     tabPanel(
       title,
-      fluidRow(12, summary_input_panel()), # we can name elemnts for more clarity
-      
-      
+      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
-        column(width = 4, verbatimTextOutput("summary")),
-        column(width = 7, includeMarkdown("./assets/explain summary 1.md"), offset = 1)
+        column(5, plotlyOutput("plot")),
+        column(width = 6, textOutput('write1'), offset = 1)
       ),
       fluidRow(
-        column(12, plotlyOutput("plot"))
+        column(width = 6, 
+               h4('Overall relationship between frontiers and segregation'),
+               p('Here is the relationship')),
+        column(width = 6, verbatimTextOutput("summary"))
       )
       
     )
@@ -81,8 +82,9 @@ summary_panel <-
 diag_panel <-
   function(title){
     tabPanel(title,
-             
-             fluidRow(textOutput('pick1') )
+             fluidRow(
+               p('some text')
+             )
              )
   }
 
