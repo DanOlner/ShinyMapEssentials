@@ -42,7 +42,11 @@ map_input_panel <-
 
 about_tab_panel <- 
   function(id){
-    tabPanel(id,  verbatimTextOutput("inputs"))
+    tabPanel(id,  
+             fluidRow(
+               column(width = 12, includeMarkdown("./assets/about.md"), offset = 3)
+               )
+    )
   }
 
 summary_panel <-
@@ -50,7 +54,7 @@ summary_panel <-
     tabPanel(
       id,
       fluidRow(
-        column(4, verbatimTextOutput("summary"))
+        column(4, verbatimTextOutput("summary")),
       ),
       fluidRow(
         column(12, plotlyOutput("plot"))
@@ -63,10 +67,10 @@ summary_panel <-
 fluidPage(
   
   # App title ----
-  titlePanel("Tabsets"),
+  titlePanel("Life at the Frontiers"),
   
   ## theme to look diff
-  theme = bs_theme(version = 5), 
+  theme = bs_theme(version = 5, bootswatch = 'lux'), 
   
 
     ## create a function for the input slider
