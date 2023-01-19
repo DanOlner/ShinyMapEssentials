@@ -4,6 +4,7 @@ library(sf)
 library(leaflet)
 library(plotly)
 library(bslib)
+library(knitr)
 
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
@@ -54,11 +55,16 @@ summary_panel <-
     tabPanel(
       id,
       fluidRow(
-        column(4, verbatimTextOutput("summary")),
+        column(width = 4, verbatimTextOutput("summary")),
+        column(width = 7, includeMarkdown("./assets/explain summary 1.md"), offset = 1)
       ),
       fluidRow(
         column(12, plotlyOutput("plot"))
-      )
+      ),
+      fluidRow(
+        textOutput('pick1')
+      ),
+      
     )
   }
 

@@ -47,6 +47,14 @@ st_geometry(areas_no_geom) <- NULL
 
 function(input, output) {
   
+  ## What people have picked
+  
+  output$pick1 <-
+    renderText({
+      input$la_varname_to_display_on_map
+    })
+    
+
   ## Data -- map_df() is a function which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
