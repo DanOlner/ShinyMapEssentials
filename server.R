@@ -3,11 +3,11 @@
 
 
 # #Based on https://shiny.rstudio.com/articles/tabsets.html
-lsoa <- readRDS('data/lsoa_layer_w_ttwalookup.rds')
+lsoa <- readRDS('data/lsoa.rds')
 #load local authority level summary map data
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 #
-ttwa <- readRDS('data/ttwa_engwales.rds')
+ttwa <- readRDS('data/ttwa.rds')
 
 #Separate zoom value - copy to when changes from input$map_zoom
 #Why? because input$map_zoom is NULL on first loading
@@ -131,7 +131,7 @@ function(input, output) {
     #Can I set manually? (Is NULL on first load and length for if test is zero, see below)
     #Newp, is read-only
     #input$map_zoom = 6
-    print(cat("Map zoom: ",input$map_zoom,"\n"))
+    cat("Observe map_df, Map zoom: ",input$map_zoom,"\n")
     
     
     #Length arg cos NULL evaluates as logical(0) and throws an error. Duh.
@@ -149,7 +149,7 @@ function(input, output) {
   observeEvent(input$map_zoom, {
     
     zoomvalue = input$map_zoom
-    cat("Map zoom: ",zoomvalue,"\n")
+    cat("Observe zoom, map zoom: ",zoomvalue,"\n")
     
     #Hide based on zoom
     #This code runs also in main map observe; must be way to avoid duplication
@@ -169,10 +169,24 @@ function(input, output) {
       
       leafletProxy("map") %>% hideGroup("top level geography")
       
+      #Find LSOA under centre point
+      centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
+      
+      #This works. Huh.
+      #Without it, we get the error described here
+      #(Only need to set once but keeping here for now for clarity)
+      #https://stackoverflow.com/a/68481205/5023561
+      sf::sf_use_s2(FALSE)
+      
+      #TTWA under the central point
+      toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
+      
+      print(toplevelgeog_underpoint)
+      
       leafletProxy('map')%>% 
         addPolygons(
           # data = lsoa %>% filter(ttwa=='Sheffield & Rotherham'),
-          data = lsoa %>% filter(ttwa=='London'),
+          data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
           fillColor = ~lsoapalette(UKborn_percent),
           color = 'black',
           weight = 0.2,
@@ -189,6 +203,8 @@ function(input, output) {
   #Dragend event not implemented in r/leaflet
   #But MAPID_bounds and MAPID_center is triggered at the end of a drag, phew
   observeEvent(input$map_center, {
+    
+    cat("Observe center map point: ")
     
     #https://rstudio.github.io/leaflet/shiny.html
     #lat and lon in a list
@@ -215,29 +231,39 @@ function(input, output) {
       
       print(toplevelgeog_underpoint)
       
+      #Chance the centerpoint check may not have picked up a higher level geog
+      #If so, keep the older one so app doesn't break
+      #Older one will be kept by default, just need to not act
+      cat("length of top level geography filter: ", length(toplevelgeog_underpoint$ttwa11nm))
+      
       #If top level geography if different from last drag
       #Update the LSOAs underneath
-      if(lastTopLevelGeography != toplevelgeog_underpoint$ttwa11nm){
-        
-        cat("Updating geography\n")
-        
-        #Set outside if scope
-        lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
+      #Note, needs length check first cos if conditional can't cope with length zero, like a numpty
+      if(length(toplevelgeog_underpoint$ttwa11nm) > 0){
       
-        leafletProxy("map") %>% clearGroup("lsoas")
+        if(lastTopLevelGeography != toplevelgeog_underpoint$ttwa11nm){
+          
+          cat("Updating geography\n")
+          
+          #Set outside if scope
+          lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
         
-        leafletProxy('map') %>% 
-          addPolygons(
-            data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
-            fillColor = ~lsoapalette(UKborn_percent),
-            color = 'black',
-            weight = 0.2,
-            opacity = 1,
-            fillOpacity = 0.5,
-            group = "lsoas"
-          )
-      
-      }#end if lastTopLevelGeography
+          leafletProxy("map") %>% clearGroup("lsoas")
+          
+          leafletProxy('map') %>% 
+            addPolygons(
+              data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
+              fillColor = ~lsoapalette(UKborn_percent),
+              color = 'black',
+              weight = 0.2,
+              opacity = 1,
+              fillOpacity = 0.5,
+              group = "lsoas"
+            )
+        
+        }#end if lastTopLevelGeography
+        
+      }#end if length
       
     }#end if LSOA zoom level
     
@@ -255,11 +281,17 @@ function(input, output) {
       setView(lng = -2, lat = 53, zoom = 6)
 
   })
+  
+  #https://stackoverflow.com/a/62701468/5023561
+  #For making sure data loads to map on initial load
+  outputOptions(output, "map", suspendWhenHidden = FALSE)
 
   
   
 
   observe({
+    
+    cat("Leaflet proxy call.")
 
     #Change map when variable changed
     #See https://rstudio.github.io/leaflet/shiny.html -

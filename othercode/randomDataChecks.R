@@ -121,6 +121,36 @@ proc.time() - x
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK DATA FROM FRONTIERS PACKAGE 23.1.23----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#UPDATE, HASN'T BEEN FIXED YET
+
+#Meng Le changed so should be working directly now?
+#Have labelled them test temporarily
+
+#Reading directly from frontiers repo
+lsoa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/lsoa%20layer.rds'))
+ttwa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/ttwa%202011%20layer.rds'))
+
+#No NAs in the TTWA names
+table(is.na(lsoa$ttwa))
+
+#No dups
+length(unique(lsoa$zoneID))
+
+#Do we have a match when 2011 removed? TICK
+lsoa$ttwa <- gsub(x = lsoa$ttwa, pattern = " (2011)", replacement = "", fixed = T)
+table(ttwa$ttwa11nm %in% lsoa$ttwa)
+
+#Save for use, with removed 2011 so there's a match
+#What's CRS?
+st_crs(lsoa)
+st_crs(ttwa)
+
+
+
 
 
 

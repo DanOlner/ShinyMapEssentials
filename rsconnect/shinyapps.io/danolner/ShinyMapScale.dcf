@@ -1,0 +1,14 @@
+name: ShinyMapScale
+title: ShinyMapScale
+username:
+account: danolner
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8100384
+bundleId: 6763563
+url: https://danolner.shinyapps.io/ShinyMapScale/
+when: 1674476259.831
+lastSyncTime: 1674476259.83101
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: local

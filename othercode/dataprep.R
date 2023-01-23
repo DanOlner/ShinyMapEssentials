@@ -190,3 +190,34 @@ ttwa <- st_transform(ttwa, "EPSG:4326")
 
 saveRDS(ttwa %>% filter(country %in% c('E','W','K')),'data/ttwa_engwales.rds')
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#LOAD LSOA TTWA DIRECTLY FROM FRONTIERS REPO, TWEAK LOOKUP SO MATCHES----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lsoa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/lsoa%20layer.rds'))
+ttwa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/ttwa%202011%20layer.rds'))
+frontiers <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/frontier%20borders%20layer.rds'))
+
+#No NAs in the TTWA names
+table(is.na(lsoa$ttwa))
+
+#No dups
+length(unique(lsoa$zoneID))
+
+#Do we have a match when 2011 removed? TICK
+lsoa$ttwa <- gsub(x = lsoa$ttwa, pattern = " (2011)", replacement = "", fixed = T)
+table(ttwa$ttwa11nm %in% lsoa$ttwa)
+
+#Percent non UK born
+lsoa <- lsoa %>% mutate(UKborn_percent = (ukBorn/allResidents)*100)
+
+#Frontiers are in list, each element a local authority...
+
+#Save for shiny app
+saveRDS(lsoa, 'data/lsoa.rds')
+saveRDS(ttwa, 'data/ttwa.rds')
+saveRDS(frontiers, 'data/frontiers_in_LA.rds')
+
+
+
