@@ -219,7 +219,9 @@ function(input, output) {
     
       #Find top level geography underneath this point
       #It's not necessarily shown, so use the sf itself
-      centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
+      centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), 
+                           crs = "EPSG:4326"
+                             )
       
       #This works. Huh.
       #Without it, we get the error described here
