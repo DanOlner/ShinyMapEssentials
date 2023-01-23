@@ -58,9 +58,16 @@ ttwa <- ttwa %>%
     Other_index = sample.int(length(ttwa11nm), length(ttwa11nm))
   )
 
-#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
-#SETTING TO TTWA FOR NOW (IN SERVER)
+
+
+# functions ---------------------------------------------------------------
+
+## pick from input 
+## Starting value for the topgeography
 toplevelgeog <- ttwa
+
+## names 
+
 
 
 # no geom la --------------------------------------------------------------
@@ -69,12 +76,32 @@ areas_no_geom <-
   la
 st_geometry(areas_no_geom) <- NULL
 
-
-
+?switch
 # server.R ----------------------------------------------------------------
-
+ttwa$ttwa11nm
 
 function(input, output) {
+  
+  ## General variables we want to keep track off 
+  
+  output$chose_ttwa <-
+    reactive({
+      input$chose_ttwa
+    })
+
+  
+  ## Reactive component to change ui elements 
+  observe({
+    updateSelectInput(
+      inputId = 'area_chosen',
+      choices = switch(
+      ifelse(input$chose_ttwa, 'ttwa', 'la'), 
+      ttwa = ttwa$ttwa11nm %>% unique, 
+      la = la$NAME %>% unique
+      )
+    )
+  })
+
   
   ## Example write up 
   
@@ -101,10 +128,15 @@ function(input, output) {
     
 
 
+  
+
   ## Data -- map_df() is a function which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
   map_df = reactive({
+    
+    if(input$chose_ttwa)(toplevelgeog <- ttwa)else(toplevelgeog<-la)
+
     
     #Select just the one column to display
     x <- toplevelgeog %>% select(input$toplevel_varname_to_display_on_map)

@@ -22,6 +22,7 @@ toplevel_colname_options <-
     'Other_index'
   )
 
+
 area_options <- 
   la$NAME %>% unique
 
@@ -50,6 +51,20 @@ summary_input_panel <-
     )
   }
 
+
+upper_area_input <-
+  function(){
+    switchInput(
+      inputId = 'chose_ttwa',
+      label = 'Area type:',
+      onLabel = 'TTWA',
+      offLabel = 'LA'
+    )
+  }
+
+    
+## Panels -------------------------------------------
+
 about_tab_panel <- 
   function(title){
     tabPanel(title,  
@@ -64,7 +79,10 @@ summary_panel <-
   function(title){
     tabPanel(
       title,
-      fluidRow(width = 12, summary_input_panel()), 
+      fluidRow(
+        column(width = 4, upper_area_input()),
+        column(width = 4, summary_input_panel())
+               ), 
       
       fluidRow(
         column(5, plotlyOutput("plot")),
@@ -84,7 +102,7 @@ diag_panel <-
   function(title){
     tabPanel(title,
              fluidRow(
-               p('some text')
+               verbatimTextOutput('chose_ttwa')
              )
              )
   }
