@@ -68,14 +68,14 @@ function(input, output) {
 
   ## Reactive element for changing data and values -------------------------
   
-  toplevelgeog_layer <-
+  get_toplevelgeog <-
     reactive({
       if(input$chose_ttwa)return(ttwa)
       return(la)
     })
   
   toplevelgeog_no_geom <- reactive({
-    temp <- toplevelgeog_layer()
+    temp <- get_toplevelgeog()
 
     
     st_geometry(temp) <- NULL
@@ -83,7 +83,7 @@ function(input, output) {
     
   })
   
-  ## Reactive elements for changing ui elements --------------------------------
+  ## Reactive elements for updating ui elements (See ui.R) --------------------------------
 
   ## Reactive component to change ui elements 
   observe({
@@ -95,13 +95,6 @@ function(input, output) {
   
 
   
-  ## General variables we want to keep track off 
-  
-  output$chose_ttwa <-
-    reactive({
-      input$chose_ttwa
-    })
-
 
   ## Text write up example
   output$write1 <-
@@ -131,7 +124,7 @@ function(input, output) {
   map_df = reactive({
 
     #Select just the one column to display
-    x <- toplevelgeog_layer() %>% select(input$toplevel_varname_to_display_on_map)
+    x <- get_toplevelgeog() %>% select(input$toplevel_varname_to_display_on_map)
     
     #rename to displaycolumn so it's the same each time when updated
     #(May be a better way to do this)
@@ -235,7 +228,7 @@ function(input, output) {
       sf::sf_use_s2(FALSE)
       
       #TTWA under the central point
-      toplevelgeog_underpoint <- st_intersection(toplevelgeog_layer(), centerpoint)
+      toplevelgeog_underpoint <- st_intersection(get_toplevelgeog(), centerpoint)
       
       print(toplevelgeog_underpoint)
       
