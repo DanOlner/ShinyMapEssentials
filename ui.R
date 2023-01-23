@@ -7,16 +7,17 @@
 #load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 
+#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
+#SETTING TO TTWA FOR NOW (IN SERVER)
+
 
 #LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-la_colname_options <- names(la)[3:20]
+# toplevel_colname_options <- names(la)[3:20]
 
 # fake data ---------------------------------------------------------------
 
-la_colname_options <-
-  c(la_colname_options,
-    'frontier_rank',
-    'IMD_rank',
+toplevel_colname_options <-
+  c('IMD_rank',
     'Dissimilarity_index',
     'Other_index'
   )
@@ -28,13 +29,13 @@ area_options <-
 
 map_input_panel <-
   function(){
-  selectInput(
-    inputId = 'la_varname_to_display_on_map',
-    label = 'local authority variable to display on map',
-    choices = la_colname_options,
-    selected = 'mean2019',
-    selectize = T
-  )
+     selectInput(
+        inputId = 'toplevel_varname_to_display_on_map',
+        label = 'top level geog variable to display on map',
+        choices = toplevel_colname_options,
+        selected = 'IMD_rank',
+        selectize = T
+        )
   }
 
 
@@ -99,20 +100,6 @@ fluidPage(
   theme = bs_theme(version = 5, bootswatch = 'lux'), 
   
 
-    ## create a function for the input slider
-
-    # # Sidebar panel for inputs ----
-    # sidebarPanel(
-    # 
-      # selectInput(
-      #   inputId = 'la_varname_to_display_on_map',
-      #   label = 'local authority variable to display on map',
-      #   choices = la_colname_options,
-      #   selected = 'mean2019',
-      #   selectize = T
-      #   )
-    # 
-    # ),
     
     #Floating panel above - currently not showing above the map, will have to fiddle with order
     #https://stackoverflow.com/a/42292858

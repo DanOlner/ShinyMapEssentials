@@ -120,6 +120,14 @@ lsoa.largest <- lsoa.intersect %>%
 lsoa.merge <- lsoa %>% select(-ttwa) %>% 
   left_join(lsoa.largest %>% st_set_geometry(NULL) %>% select(zoneID,ttwa),by = 'zoneID')
 
+#Convert to long lat so will work with leaflet
+lsoa.merge <- st_transform(lsoa.merge, "EPSG:4326")
+
+#Add proportion non UK variable
+lsoa.merge <- lsoa.merge %>% 
+  mutate(UKborn_percent = (ukBorn/allResidents)*100)
+
+
 #Yup, half the size. Huh.
 saveRDS(lsoa.merge,'data/lsoa_layer_w_ttwalookup.rds')
 
@@ -130,10 +138,55 @@ saveRDS(lsoa.merge,'data/lsoa_layer_w_ttwalookup.rds')
 table(unique(lsoa.merge$ttwa) %in% ttwa$NAME)
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CONVERT TTWAS TO LAT LONG FOR LEAFLET, INTERSECT TO KEEP ONLY THE APPROPRIATE PART OF ENGLAND/SCOTLAND TTWA?----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#Using original TTWA file with slightly better matching boundaries to TTWA
+# ttwa <- st_read('../../MapPolygons/GreatBritain/2001/TTWAs/greatBritainTTWAs.shp')
+# 
+# #Or not - this one has 429 obs, that's far too high (many repeats)
+# 
+# #Merge by name and check if still valid
+# #https://stackoverflow.com/a/49354480
+# ttwa <- ttwa %>% 
+#   group_by(NAME) %>%
+#   summarise(geometry = st_union(geometry)) %>%
+#   ungroup()
+# 
+# #Check in QGIS... tick
+# #Some were broken overlaps between countries
+# st_write(ttwa,'local/ttwaunioncheck.shp')
+# 
+# ttwa <- st_transform(ttwa, "EPSG:4326")
+# 
+# #Hah, this one doesn't have labels for different countries.
+# #Load in one that does, use to filter
+# ttwa.w.countries <- readRDS('data/ttwa 2011 layer.rds')
+# 
+# #Get letter from code
+# ttwa.w.countries$country <- substr(ttwa.w.countries$ttwa11cd,1,1)
+# 
+# #Check match... newp
+# table(ttwa.w.countries$ttwa11nm %in% ttwa$NAME)
+# 
+# ttwa$NAME[order(ttwa$NAME)]
+# ttwa.w.countries$ttwa11nm[order(ttwa.w.countries$ttwa11nm)]
 
 
 
+#THIS IS ALL A FAFF - USING MENG LE'S FOR NOW, COME BACK TO
+#Difference in number, might be different year, need to return to
+#His frontier code will have been run on his TTWA file, so...
+ttwa <- readRDS('data/ttwa 2011 layer.rds')
 
+#Pull out single letter indicating country
+#K = overlaps two countries - we can keep those
+ttwa$country <- substr(ttwa$ttwa11cd,1,1)
 
+#Convert to long lat so will work with leaflet
+ttwa <- st_transform(ttwa, "EPSG:4326")
 
+saveRDS(ttwa %>% filter(country %in% c('E','W','K')),'data/ttwa_engwales.rds')
 
