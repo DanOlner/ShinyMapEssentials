@@ -41,38 +41,23 @@ lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$UKborn_percent, na.col
 la <-
   la %>%
   mutate(
-    frontier_rank = sample.int(length(NAME), length(NAME)),
-    IMD_rank = sample.int(length(NAME), length(NAME)),
-    Dissimilarity_index = sample.int(length(NAME), length(NAME)),
-    Other_index = sample.int(length(NAME), length(NAME))
+    name = NAME,
+    frontier_rank = sample.int(length(name), length(name)),
+    IMD_rank = sample.int(length(name), length(name)),
+    Dissimilarity_index = sample.int(length(name), length(name)),
+    Other_index = sample.int(length(name), length(name))
     )
 
 ttwa <- ttwa %>% 
   mutate(
-    IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Dissimilarity_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Other_index = sample.int(length(ttwa11nm), length(ttwa11nm))
+    name = ttwa11nm,
+    frontier_rank = sample.int(length(name), length(name)),
+    IMD_rank = sample.int(length(name), length(name)),
+    Dissimilarity_index = di,
+    Other_index = sample.int(length(name), length(name))
   )
 
 # 
-
-
-
-
-# names of stuff used by function  -------------------------------------------
-
-## pick from input 
-## Starting value for the topgeography
-## toplevelgeog : this is the base layer for the top level (ttwa/ la)
-toplevelgeog <- ttwa  ## This is changed in the data 
-
-
-
-# no geom la --------------------------------------------------------------
-
-# areas_no_geom <-
-#   la
-# st_geometry(areas_no_geom) <- NULL
 
 # server.R ----------------------------------------------------------------
 ## keep all reative 
@@ -80,7 +65,8 @@ toplevelgeog <- ttwa  ## This is changed in the data
 function(input, output) {
   
   
-  ## Reactive element for changing values ----------------------------------
+
+  ## Reactive element for changing data and values -------------------------
   
   toplevelgeog_layer <-
     reactive({
@@ -88,7 +74,7 @@ function(input, output) {
       return(la)
     })
   
-  areas_no_geom <- reactive({
+  toplevelgeog_no_geom <- reactive({
     temp <- toplevelgeog_layer()
 
     
@@ -103,13 +89,11 @@ function(input, output) {
   observe({
     updateSelectInput(
       inputId = 'area_chosen',
-      choices = switch(
-        ifelse(input$chose_ttwa, 'ttwa', 'la'), 
-        ttwa = ttwa$ttwa11nm %>% unique, 
-        la = la$NAME %>% unique
-      )
+      choices = toplevelgeog_no_geom()$name %>% unique
     )
   })
+  
+
   
   ## General variables we want to keep track off 
   
@@ -118,27 +102,8 @@ function(input, output) {
       input$chose_ttwa
     })
 
-  
-  ## Reactive component to change ui elements 
-  observe({
-    updateSelectInput(
-      inputId = 'area_chosen',
-      choices = switch(
-      ifelse(input$chose_ttwa, 'ttwa', 'la'), 
-      ttwa = ttwa$ttwa11nm %>% unique, 
-      la = la$NAME %>% unique
-      )
-    )
-  })
 
-  
-  ## Example write up 
-  
-  get_area_stats <-
-    reactive({
-      la %>% filter(NAME == input$area_chosen)
-    })
-  
+  ## Text write up example
   output$write1 <-
     renderText({
       paste(
@@ -162,13 +127,11 @@ function(input, output) {
   ## Data -- map_df() is a reactive evaluation which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
+  ## @Meng @Dan: I suggest changing map_df to map_sf because it's used as an sf objective later
   map_df = reactive({
-    
-    if(input$chose_ttwa)(toplevelgeog <- ttwa)else(toplevelgeog<-la)
 
-    
     #Select just the one column to display
-    x <- toplevelgeog %>% select(input$toplevel_varname_to_display_on_map)
+    x <- toplevelgeog_layer() %>% select(input$toplevel_varname_to_display_on_map)
     
     #rename to displaycolumn so it's the same each time when updated
     #(May be a better way to do this)
@@ -272,24 +235,24 @@ function(input, output) {
       sf::sf_use_s2(FALSE)
       
       #TTWA under the central point
-      toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
+      toplevelgeog_underpoint <- st_intersection(toplevelgeog_layer(), centerpoint)
       
       print(toplevelgeog_underpoint)
       
       #If top level geography if different from last drag
       #Update the LSOAs underneath
-      if(lastTopLevelGeography != toplevelgeog_underpoint$ttwa11nm){
+      if(lastTopLevelGeography != toplevelgeog_underpoint$name){
         
         cat("Updating geography\n")
         
         #Set outside if scope
-        lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
+        lastTopLevelGeography <<- toplevelgeog_underpoint$name
       
         leafletProxy("map") %>% clearGroup("lsoas")
         
         leafletProxy('map') %>% 
           addPolygons(
-            data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
+            data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$name),
             fillColor = ~lsoapalette(UKborn_percent),
             color = 'black',
             weight = 0.2,
@@ -356,7 +319,7 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(areas_no_geom())
+    summary(toplevelgeog_no_geom())
   })
   
   ## generate plot -----
@@ -370,7 +333,7 @@ function(input, output) {
   source('table_widget.R')
   output$table <- DT::renderDataTable({
     table_widget(
-      areas_no_geom
+      toplevelgeog_no_geom()
       )
   })
   

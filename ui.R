@@ -6,13 +6,8 @@
 
 #load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
+ttwa <- readRDS('data/ttwa_engwales.rds')
 
-#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
-#SETTING TO TTWA FOR NOW (IN SERVER)
-
-
-#LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-# toplevel_colname_options <- names(la)[3:20]
 
 # fake data ---------------------------------------------------------------
 
@@ -24,7 +19,7 @@ toplevel_colname_options <-
 
 
 area_options <- 
-  la$NAME %>% unique
+  ttwa$ttwa11nm %>% unique
 
 # ui elements  --------------------------------------------------------------
 
@@ -50,12 +45,12 @@ summary_input_panel <-
     )
   }
 
-
+## This widget chooses between LA / TTWA / whatever geographies
 upper_area_input <-
   function(){
     switchInput(
       inputId = 'chose_ttwa',
-      label = 'Area type:',
+      label = 'View mode',
       onLabel = 'TTWA',
       offLabel = 'LA',
       value = T
@@ -80,7 +75,7 @@ summary_panel <-
     tabPanel(
       title,
       fluidRow(
-        column(width = 4, upper_area_input()),
+#        column(width = 4, upper_area_input()),
         column(width = 4, summary_input_panel())
                ), 
       
@@ -96,6 +91,19 @@ summary_panel <-
       )
       
     )
+  }
+
+map_panel <-
+  function(title){
+    tabPanel(title = title, 
+             sidebarLayout(
+               sidebarPanel(
+                 fluidRow(upper_area_input() ),
+                 fluidRow(map_input_panel() )
+               ),
+               mainPanel(leafletOutput("map", height = 1000)))
+    )
+    
   }
 
 diag_panel <-
@@ -147,12 +155,7 @@ fluidPage(
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
                   about_tab_panel('About'),
-                  
-                  tabPanel("mapTab", 
-                           sidebarLayout(
-                             sidebarPanel(map_input_panel()),
-                             mainPanel(leafletOutput("map", height = 1000)))
-                           ),
+                  map_panel("Maps"),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
   #                tabPanel("plotTab", plotlyOutput("plot")),
                   summary_panel('Summary and plots'),

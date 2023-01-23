@@ -5,7 +5,7 @@ library(plotly)
 scatter_widget <-
   function(data){
     p <- ggplot(
-      data = data, aes_string(x = 'IMD_rank', y = 'frontier_rank', text = 'NAME')
+      data = data, aes_string(x = 'Dissimilarity_index', y = 'frontier_rank', text = 'name')
       ) + 
       geom_point(
         aes(colour = frontier_rank)
