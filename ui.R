@@ -46,7 +46,6 @@ summary_input_panel <-
       inputId = 'area_chosen',
       label = 'Area to summarise',
       choices = area_options,
-#      selected = 'Bedford',
       selectize = T
     )
   }
@@ -58,7 +57,8 @@ upper_area_input <-
       inputId = 'chose_ttwa',
       label = 'Area type:',
       onLabel = 'TTWA',
-      offLabel = 'LA'
+      offLabel = 'LA',
+      value = T
     )
   }
 

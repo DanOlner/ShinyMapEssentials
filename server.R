@@ -9,6 +9,11 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 #
 ttwa <- readRDS('data/ttwa_engwales.rds')
 
+
+
+# initial values ----------------------------------------------------------
+
+
 #Separate zoom value - copy to when changes from input$map_zoom
 #Why? because input$map_zoom is NULL on first loading
 #And this avoids having to do double null / length test
@@ -31,15 +36,6 @@ lastTopLevelGeography = "none"
 lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$UKborn_percent, na.color="transparent")
 
 
-# frontiers_data <- 
-#   readRDS('data/frontier borders layer.rds')
-# 
-# lsoa_data_2 <- 
-#   readRDS('data/lsoa layer.rds')
-# ttwa_data <-
-#   readRDS('data/ttwa 2011 layer.rds')
-# 
-
 # fake data for app -------------------------------------------------------
 
 la <-
@@ -58,29 +54,62 @@ ttwa <- ttwa %>%
     Other_index = sample.int(length(ttwa11nm), length(ttwa11nm))
   )
 
+# 
 
 
-# functions ---------------------------------------------------------------
+
+
+# names of stuff used by function  -------------------------------------------
 
 ## pick from input 
 ## Starting value for the topgeography
-toplevelgeog <- ttwa
-
-## names 
+## toplevelgeog : this is the base layer for the top level (ttwa/ la)
+toplevelgeog <- ttwa  ## This is changed in the data 
 
 
 
 # no geom la --------------------------------------------------------------
 
-areas_no_geom <-
-  la
-st_geometry(areas_no_geom) <- NULL
+# areas_no_geom <-
+#   la
+# st_geometry(areas_no_geom) <- NULL
 
-?switch
 # server.R ----------------------------------------------------------------
-ttwa$ttwa11nm
+## keep all reative 
 
 function(input, output) {
+  
+  
+  ## Reactive element for changing values ----------------------------------
+  
+  toplevelgeog_layer <-
+    reactive({
+      if(input$chose_ttwa)return(ttwa)
+      return(la)
+    })
+  
+  areas_no_geom <- reactive({
+    temp <- toplevelgeog_layer()
+
+    
+    st_geometry(temp) <- NULL
+    return(temp)
+    
+  })
+  
+  ## Reactive elements for changing ui elements --------------------------------
+
+  ## Reactive component to change ui elements 
+  observe({
+    updateSelectInput(
+      inputId = 'area_chosen',
+      choices = switch(
+        ifelse(input$chose_ttwa, 'ttwa', 'la'), 
+        ttwa = ttwa$ttwa11nm %>% unique, 
+        la = la$NAME %>% unique
+      )
+    )
+  })
   
   ## General variables we want to keep track off 
   
@@ -130,7 +159,7 @@ function(input, output) {
 
   
 
-  ## Data -- map_df() is a function which returns data to be used elsewhere
+  ## Data -- map_df() is a reactive evaluation which returns data to be used elsewhere
   #User can choose which data column will be shown
   #Subset LA data to the appropriate column
   map_df = reactive({
@@ -277,6 +306,7 @@ function(input, output) {
   })
   
   
+  ## Leaflet maps ------------------------
   #Initial map output creation (static elements only, dynamic changes in observes / leafletproxy)
   #See https://rstudio.github.io/leaflet/shiny.html
   output$map <- renderLeaflet({
@@ -326,7 +356,7 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(areas_no_geom)
+    summary(areas_no_geom())
   })
   
   ## generate plot -----
