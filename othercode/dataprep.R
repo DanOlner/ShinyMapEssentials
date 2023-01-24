@@ -212,12 +212,29 @@ table(ttwa$ttwa11nm %in% lsoa$ttwa)
 #Percent non UK born
 lsoa <- lsoa %>% mutate(UKborn_percent = (ukBorn/allResidents)*100)
 
-#Frontiers are in list, each element a local authority...
+#Frontiers are in list, each element a TTWA...
+#Frontiers not currently lon lat. Convert.
+
+#Also, simplify to see if speed can be increased
+
+frontiers.proc <- lapply(frontiers, function(x) {
+  
+  if(!is.null(x)) {
+    
+    x <- st_simplify(x, dTolerance = 5000, preserveTopology = F)
+    st_transform(x, "EPSG:4326")
+    
+  }
+  
+  
+})
+
+st_crs(frontiers.proc[[1]])
 
 #Save for shiny app
 saveRDS(lsoa, 'data/lsoa.rds')
 saveRDS(ttwa, 'data/ttwa.rds')
-saveRDS(frontiers, 'data/frontiers_in_LA.rds')
+saveRDS(frontiers.proc, 'data/frontiers_list.rds')
 
 
 

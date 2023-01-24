@@ -5,3 +5,5 @@ library(leaflet)
 library(plotly)
 library(bslib)
 library(knitr)
+
+source('misc_functions.R')

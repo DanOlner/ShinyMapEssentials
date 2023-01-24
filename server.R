@@ -9,6 +9,15 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 #
 ttwa <- readRDS('data/ttwa.rds')
 
+#FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
+frontiers.original.list <- readRDS('data/frontiers_list.rds')
+
+#Filter phi, keep values above cutoff (in function so can be set by user)
+#Function loaded in global.R
+x <- proc.time()
+frontiers.live.list <- filter.frontiers.by.phi(frontiers.original.list, 1)
+cat('Time to filter frontiers list: ', proc.time() - x,'\n')
+
 #Separate zoom value - copy to when changes from input$map_zoom
 #Why? because input$map_zoom is NULL on first loading
 #And this avoids having to do double null / length test
@@ -159,6 +168,7 @@ function(input, output) {
       
       leafletProxy("map") %>% showGroup("top level geography")
       leafletProxy("map") %>% clearGroup("lsoas")
+      leafletProxy("map") %>% clearGroup("frontiers")
       
       lastzoomvalue = zoomvalue
       
@@ -185,7 +195,6 @@ function(input, output) {
       
       leafletProxy('map')%>% 
         addPolygons(
-          # data = lsoa %>% filter(ttwa=='Sheffield & Rotherham'),
           data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
           fillColor = ~lsoapalette(UKborn_percent),
           color = 'black',
@@ -193,7 +202,15 @@ function(input, output) {
           opacity = 1,
           fillOpacity = 0.5,
           group = "lsoas"
-        )
+        ) %>% 
+        addPolylines(
+          data = frontiers.live.list[[toplevelgeog_underpoint$ttwa11nm]],
+          color = 'black',
+          weight = 1,
+          opacity = 1,
+          group = "frontiers"
+        ) 
+        
       
     }
     
@@ -249,6 +266,7 @@ function(input, output) {
           lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
         
           leafletProxy("map") %>% clearGroup("lsoas")
+          leafletProxy("map") %>% clearGroup("frontiers")
           
           leafletProxy('map') %>% 
             addPolygons(
@@ -259,7 +277,14 @@ function(input, output) {
               opacity = 1,
               fillOpacity = 0.5,
               group = "lsoas"
-            )
+            ) %>% 
+            addPolylines(
+              data = frontiers.live.list[[toplevelgeog_underpoint$ttwa11nm]],
+              color = 'black',
+              weight = 1,
+              opacity = 1,
+              group = "frontiers"
+            ) 
         
         }#end if lastTopLevelGeography
         

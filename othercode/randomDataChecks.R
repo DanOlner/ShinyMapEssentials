@@ -121,33 +121,63 @@ proc.time() - x
 
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#CHECK DATA FROM FRONTIERS PACKAGE 23.1.23----
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK FRONTIERS DATA----
+#~~~~~~~~~~~~~~~~~~~~~~~~
 
-#UPDATE, HASN'T BEEN FIXED YET
-
-#Meng Le changed so should be working directly now?
-#Have labelled them test temporarily
-
-#Reading directly from frontiers repo
-lsoa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/lsoa%20layer.rds'))
+#Checking on social frontiers data. Does subsetting using existing list of TTWAs Meng Le made work faster than just filtering?
+frontiers <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/frontier%20borders%20layer.rds'))
+#ttwas to check match
 ttwa <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/ttwa%202011%20layer.rds'))
 
-#No NAs in the TTWA names
-table(is.na(lsoa$ttwa))
+class(frontiers)
+class(frontiers[[1]])
 
-#No dups
-length(unique(lsoa$zoneID))
+#Tick
+table(names(frontiers) %in% ttwa$ttwa11nm)
 
-#Do we have a match when 2011 removed? TICK
-lsoa$ttwa <- gsub(x = lsoa$ttwa, pattern = " (2011)", replacement = "", fixed = T)
-table(ttwa$ttwa11nm %in% lsoa$ttwa)
+#Dataframe copy
+#This should work, doesn't work with sf
+#frontiers.df <- bind_rows(frontiers, .id = "ttwa")
+# frontiers.df <- bind_rows(frontiers)
 
-#Save for use, with removed 2011 so there's a match
-#What's CRS?
-st_crs(lsoa)
-st_crs(ttwa)
+#Do manually
+frontiers.df <- frontiers[[1]] %>% 
+  mutate(ttwa = names(frontiers[1]))
+
+for(i in names(frontiers)[2:length(names(frontiers))]){
+  
+  # cat(i,'\n')
+  
+  #Some have no frontiers found, I think (e.g. Penzance)
+  #Look out for no find in the app itself, of course... (no way to add zero row with lookup present)
+  if(!is.null(frontiers[[i]])){
+  
+    x <- frontiers[[i]] %>% mutate(ttwa = i)
+  
+  } 
+  
+  frontiers.df <- bind_rows(frontiers.df, x)
+  
+}
+
+#Speed check. List muuuuuuch faster (no actual searching through each row going on)
+#1. List
+x <- proc.time()
+for(i in 1:10000) y <- frontiers[[ttwa$ttwa11nm[1]]]
+proc.time() - x
+
+x <- proc.time()
+for(i in 1:10000) y <- frontiers.df %>% filter(ttwa == 'Aberystwyth')
+proc.time() - x
+
+#Darnit, isn't lon lat
+st_crs(frontiers[[1]])
+
+
+
+
+
 
 
 
