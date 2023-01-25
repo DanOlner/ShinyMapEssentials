@@ -221,8 +221,8 @@ frontiers.proc <- lapply(frontiers, function(x) {
   
   if(!is.null(x)) {
     
-    x <- st_simplify(x, dTolerance = 5000, preserveTopology = F)
-    st_transform(x, "EPSG:4326")
+    x <- st_simplify(x, dTolerance = 1000, preserveTopology = F)
+    x <- st_transform(x, "EPSG:4326")
     
   }
   

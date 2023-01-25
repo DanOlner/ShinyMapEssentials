@@ -15,7 +15,7 @@ frontiers.original.list <- readRDS('data/frontiers_list.rds')
 #Filter phi, keep values above cutoff (in function so can be set by user)
 #Function loaded in global.R
 x <- proc.time()
-frontiers.live.list <- filter.frontiers.by.phi(frontiers.original.list, 1)
+frontiers.live.list <- filter.frontiers.by.phi(frontiers.original.list, 1.96)
 cat('Time to filter frontiers list: ', proc.time() - x,'\n')
 
 #Separate zoom value - copy to when changes from input$map_zoom
@@ -127,37 +127,10 @@ function(input, output) {
   })
   
 
-  #Check what map_df is producing
-  observeEvent(map_df(), {
-    
-    #print(paste0(map_df() %>% st_crs()))
-    # print(map_df() %>% select('displaycolumn'))
-    
-    #"input$MAPID_zoom is an integer that indicates the zoom level"
-    #Is empty on initialisation
-    #https://rstudio.github.io/leaflet/shiny.html
-    
-    #Can I set manually? (Is NULL on first load and length for if test is zero, see below)
-    #Newp, is read-only
-    #input$map_zoom = 6
-    cat("Observe map_df, Map zoom: ",input$map_zoom,"\n")
-    
-    
-    #Length arg cos NULL evaluates as logical(0) and throws an error. Duh.
-    #https://stackoverflow.com/a/27351392
-    # if(!is.null(input$map_zoom) & length(input$map_zoom) > 0){
-    #   
-    #   print("ping!")
-    #   
-    #   if(input$map_zoom == 7) print("7 integer")
-    #   
-    # }
-    
-  })
   
   observeEvent(input$map_zoom, {
     
-    zoomvalue = input$map_zoom
+    zoomvalue <<- input$map_zoom
     cat("Observe zoom, map zoom: ",zoomvalue,"\n")
     
     #Hide based on zoom
@@ -169,6 +142,7 @@ function(input, output) {
       leafletProxy("map") %>% showGroup("top level geography")
       leafletProxy("map") %>% clearGroup("lsoas")
       leafletProxy("map") %>% clearGroup("frontiers")
+      leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
       
       lastzoomvalue = zoomvalue
       
@@ -191,7 +165,7 @@ function(input, output) {
       #TTWA under the central point
       toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
       
-      print(toplevelgeog_underpoint)
+      print(toplevelgeog_underpoint$ttwa11nm)
       
       leafletProxy('map')%>% 
         addPolygons(
@@ -206,11 +180,18 @@ function(input, output) {
         addPolylines(
           data = frontiers.live.list[[toplevelgeog_underpoint$ttwa11nm]],
           color = 'black',
-          weight = 1,
+          weight = 3,
           opacity = 1,
           group = "frontiers"
+        ) %>%
+        addPolygons(
+          data = toplevelgeog %>% filter(ttwa11nm == toplevelgeog_underpoint$ttwa11nm),
+          fill = F,
+          color = 'white',
+          weight = 8,
+          opacity = 1,
+          group = "toplevelgeog_outline"
         ) 
-        
       
     }
     
@@ -246,12 +227,12 @@ function(input, output) {
       #TTWA under the central point
       toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
       
-      print(toplevelgeog_underpoint)
+      print(toplevelgeog_underpoint$ttwa11nm)
       
       #Chance the centerpoint check may not have picked up a higher level geog
       #If so, keep the older one so app doesn't break
       #Older one will be kept by default, just need to not act
-      cat("length of top level geography filter: ", length(toplevelgeog_underpoint$ttwa11nm))
+      # cat("length of top level geography filter: ", length(toplevelgeog_underpoint$ttwa11nm))
       
       #If top level geography if different from last drag
       #Update the LSOAs underneath
@@ -267,10 +248,23 @@ function(input, output) {
         
           leafletProxy("map") %>% clearGroup("lsoas")
           leafletProxy("map") %>% clearGroup("frontiers")
+          leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
+          
+          #Separate out filter to check speed
+          #Is is the filter taking time or adding to map via leaflet?
+          #A: adding to leaflet - 0.02 seconds for filter vs (for London) 0.8 seconds for adding to leaflet
+          
+          x <- proc.time()
+          lsoafiltereddata <- lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm)
+          cat('LSOA filter time: ',proc.time() - x,'\n')
+          
+          
+          x <- proc.time()
           
           leafletProxy('map') %>% 
             addPolygons(
-              data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
+              # data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
+              data = lsoafiltereddata,
               fillColor = ~lsoapalette(UKborn_percent),
               color = 'black',
               weight = 0.2,
@@ -281,10 +275,21 @@ function(input, output) {
             addPolylines(
               data = frontiers.live.list[[toplevelgeog_underpoint$ttwa11nm]],
               color = 'black',
-              weight = 1,
+              weight = 3,
               opacity = 1,
               group = "frontiers"
+            ) %>%
+            addPolygons(
+              data = toplevelgeog %>% filter(ttwa11nm == toplevelgeog_underpoint$ttwa11nm),
+              fill = F,
+              color = 'white',
+              weight = 8,
+              opacity = 1,
+              group = "toplevelgeog_outline"
             ) 
+
+          cat('Add LSOA/frontiers to map time: ',proc.time() - x,'\n')
+          
         
         }#end if lastTopLevelGeography
         

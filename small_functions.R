@@ -15,3 +15,20 @@ filter.frontiers.by.phi <- function(frontiers.list, phi.cutoff){
   })
   
 }
+
+
+# #FRONTIER LINE THICKNESS / ZOOM LOOKUP
+# #Frontiers to be thicker lines when zoomed in closer, so they continue to stand out
+# frontierzoom.v.thickness <- function(zoom){
+#   
+#   case_when(
+#     
+#     zoom < 12 ~ 1,
+#     zoom == 12 ~ 2,
+#     zoom == 13 ~ 3,
+#     zoom == 14 ~ 4,
+#     zoom > 14 ~ 5
+#     
+#   )
+#   
+# }

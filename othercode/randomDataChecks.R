@@ -2,6 +2,7 @@
 library(tidyverse)
 library(sf)
 library(tmap)
+library(rgeos)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
 #CHECKING FILE CONTENTS----
@@ -176,13 +177,41 @@ st_crs(frontiers[[1]])
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK FRONTIERS GENERALISATION----
+#~~~~~~~~~~~~~~~~~~~~~~~~
+
+#Specifically, how the value of dtolerance effects it
+#Load from frontiers repo
+frontiers <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/frontier%20borders%20layer.rds'))
+
+#Pick just one as an example to see how generalisation changes lines
+x <- frontiers[['Barnsley']]
+
+plot(st_geometry(x))
+#plot(st_geometry(x[1,]))
+
+y <- st_simplify(x, dTolerance = 500000000, preserveTopology = F)
+
+plot(st_geometry(y), add=T, col = 'RED')
+plot(st_geometry(y[1,]))
+
+#Try casting to spatialpolgons and using rgeos::gsimplify
+z <- as_Spatial(x)
+z <- gSimplify(z, tol = 10000000, topologyPreserve = F)
+plot(st_geometry(st_as_sf(z)), add=T, col = 'RED')
 
 
 
+#Transform AFTER simplifying, see meaning of warning here - latitude units vary with latitude
+#https://stackoverflow.com/a/60008553/5023561
+x <- st_transform(x, "EPSG:4326")
 
-
-
-
+#Let's just check it's working for polygons... Yup
+ttwa <- st_read('../../MapPolygons/GreatBritain/2001/TTWAs/greatBritainTTWAs.shp')
+plot(st_geometry(ttwa))
+ttwa.s <- st_simplify(ttwa, dTolerance = 5000, preserveTopology = F)
+plot(st_geometry(ttwa.s))
 
 
 

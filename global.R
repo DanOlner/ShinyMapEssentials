@@ -6,4 +6,4 @@ library(plotly)
 library(bslib)
 library(knitr)
 
-source('misc_functions.R')
+source('small_functions.R')
