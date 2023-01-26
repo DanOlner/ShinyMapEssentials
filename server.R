@@ -39,15 +39,12 @@ lastTopLevelGeography = "none"
 #(Will be true of LSOA palette too if/when changing to more than one selectable variable)
 lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$UKborn_percent, na.color="transparent")
 
+#This fixes st_intersection not working
+#Without it, we get the error described here
+#(Only need to set once but keeping here for now for clarity)
+#https://stackoverflow.com/a/68481205/5023561
+sf::sf_use_s2(FALSE)
 
-# frontiers_data <- 
-#   readRDS('data/frontier borders layer.rds')
-# 
-# lsoa_data_2 <- 
-#   readRDS('data/lsoa layer.rds')
-# ttwa_data <-
-#   readRDS('data/ttwa 2011 layer.rds')
-# 
 
 # fake data for app -------------------------------------------------------
 
@@ -156,12 +153,6 @@ function(input, output) {
       #Find LSOA under centre point
       centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
       
-      #This works. Huh.
-      #Without it, we get the error described here
-      #(Only need to set once but keeping here for now for clarity)
-      #https://stackoverflow.com/a/68481205/5023561
-      sf::sf_use_s2(FALSE)
-      
       #TTWA under the central point
       toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
       
@@ -218,12 +209,6 @@ function(input, output) {
       #It's not necessarily shown, so use the sf itself
       centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
       
-      #This works. Huh.
-      #Without it, we get the error described here
-      #(Only need to set once but keeping here for now for clarity)
-      #https://stackoverflow.com/a/68481205/5023561
-      sf::sf_use_s2(FALSE)
-      
       #TTWA under the central point
       toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
       
@@ -250,21 +235,9 @@ function(input, output) {
           leafletProxy("map") %>% clearGroup("frontiers")
           leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
           
-          #Separate out filter to check speed
-          #Is is the filter taking time or adding to map via leaflet?
-          #A: adding to leaflet - 0.02 seconds for filter vs (for London) 0.8 seconds for adding to leaflet
-          
-          x <- proc.time()
-          lsoafiltereddata <- lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm)
-          cat('LSOA filter time: ',proc.time() - x,'\n')
-          
-          
-          x <- proc.time()
-          
           leafletProxy('map') %>% 
             addPolygons(
-              # data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
-              data = lsoafiltereddata,
+              data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
               fillColor = ~lsoapalette(UKborn_percent),
               color = 'black',
               weight = 0.2,
@@ -288,7 +261,6 @@ function(input, output) {
               group = "toplevelgeog_outline"
             ) 
 
-          cat('Add LSOA/frontiers to map time: ',proc.time() - x,'\n')
           
         
         }#end if lastTopLevelGeography
@@ -306,9 +278,11 @@ function(input, output) {
   output$map <- renderLeaflet({
 
     #Only static elements, observe below will do the dynamics
-    leaflet() %>%
+    #Set zoom fractional jumps for a bit more zoom control
+    #https://stackoverflow.com/a/62863122/5023561
+    leaflet(options = leafletOptions(zoomSnap = 0.1, zoomDelta=0.1)) %>%
       addTiles() %>%
-      setView(lng = -2, lat = 53, zoom = 6)
+      setView(lng = -2, lat = 53, zoom = 7.2)
 
   })
   

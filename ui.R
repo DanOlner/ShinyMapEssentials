@@ -133,7 +133,9 @@ fluidPage(
                   tabPanel("mapTab", 
                            sidebarLayout(
                              sidebarPanel(map_input_panel()),
-                             mainPanel(leafletOutput("map", height = 1000)))
+                             mainPanel(
+                               leafletOutput("map", height = 1000))
+                             ) 
                            ),
                   # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
   #                tabPanel("plotTab", plotlyOutput("plot")),
