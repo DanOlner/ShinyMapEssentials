@@ -77,10 +77,21 @@ st_geometry(areas_no_geom) <- NULL
 
 
 
+## Assign reactive value for the ttwa chosen
+reactive_values <- 
+  reactiveValues(
+    area_chosen = NULL
+  )
+
 # server.R ----------------------------------------------------------------
 
 
 function(input, output) {
+  
+  
+  ## reactive to update area chosen 
+  observeEvent(input$area_chosen,{reactive_values$area_chosen <- input$area_chosen}
+  )
   
   ## Example write up 
   
@@ -93,9 +104,9 @@ function(input, output) {
     renderText({
       paste(
         'This document is a worked example of the social frontier analysis used in Dean et al. and the Czech paper as applied to',
-        input$area_chosen,
+        reactive_values$area_chosen,
         'The goal is to give a quick summary of the method and present interactive results for',
-        input$area_chosen,
+        reactive_values$area_chosen,
         'The latter is important for judging how accurate the routine is at guessing what where we intuitively imagine frontiers to be.',
         
         'We use data on the number of foreign-born residents in each LSOA.', 
@@ -322,7 +333,7 @@ function(input, output) {
      
   })
   
-  # Download handlers 
+  # Download handlers -----------------
   output$download_app_data <-
     downloadHandler(
       filename = function(){
