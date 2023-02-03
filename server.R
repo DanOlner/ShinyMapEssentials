@@ -72,12 +72,12 @@ toplevelgeog <- ttwa
 # no geom la --------------------------------------------------------------
 
 areas_no_geom <-
-  la
-st_geometry(areas_no_geom) <- NULL
+  lsoa
+st_geometry(lsoa) <- NULL
 
 
 
-## Assign reactive value for the ttwa chosen
+## Assign reactive value that will be used throughout
 reactive_values <- 
   reactiveValues(
     area_chosen = NULL
@@ -97,7 +97,7 @@ function(input, output) {
   
   get_area_stats <-
     reactive({
-      la %>% filter(NAME == input$area_chosen)
+      lsoa %>% filter(ttwa == reactive_values$area_chosen)
     })
   
   output$write1 <-
@@ -353,7 +353,9 @@ function(input, output) {
   
   # Generate a summary of the data ----
   output$summary <- renderPrint({
-    summary(areas_no_geom)
+    summary(
+      get_area_stats()
+    )
   })
   
   ## generate plot -----

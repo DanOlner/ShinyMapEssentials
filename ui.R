@@ -5,7 +5,7 @@
 #RDS for these two is ~0.2 seconds vs ~10 seconds if loading from geojson directly
 
 #load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
-la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
+ttwa <- readRDS('data/ttwa.rds')
 
 #UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
 #SETTING TO TTWA FOR NOW (IN SERVER)
@@ -23,7 +23,7 @@ toplevel_colname_options <-
   )
 
 area_options <- 
-  la$NAME %>% unique
+  ttwa$ttwa11nm %>% unique
 
 # ui elements  --------------------------------------------------------------
 
