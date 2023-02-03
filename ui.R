@@ -27,6 +27,11 @@ area_options <-
 
 # ui elements  --------------------------------------------------------------
 
+download_data <-
+  function(){
+    downloadLink('download_app_data', 'Download dashboard data')
+  }
+
 map_input_panel <-
   function(){
      selectInput(
@@ -55,7 +60,11 @@ about_tab_panel <-
     tabPanel(title,  
              fluidRow(
                column(width = 11, includeMarkdown("./assets/about.md"), offset = 1)
-               )
+               ),
+             fluidRow(
+               column(width = 11, download_data(), offset = 1)
+             )
+             
     )
   }
 

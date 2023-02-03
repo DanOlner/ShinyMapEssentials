@@ -321,7 +321,19 @@ function(input, output) {
       
      
   })
-
+  
+  # Download handlers 
+  output$download_app_data <-
+    downloadHandler(
+      filename = function(){
+        paste('data.zip', sep = '')
+      },
+      content = function(con){
+        file.copy('data/data-frontiers.zip', con)
+      },
+      contentType = 'application/zip'
+    )
+  
   ## Generaate reactive inputs ----
   
   output$inputs <- renderPrint({
