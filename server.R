@@ -73,7 +73,7 @@ toplevelgeog <- ttwa
 
 areas_no_geom <-
   lsoa
-st_geometry(lsoa) <- NULL
+st_geometry(areas_no_geom) <- NULL
 
 
 
