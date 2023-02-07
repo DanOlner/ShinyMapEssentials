@@ -1,3 +1,13 @@
+#Installed check for package "reactlog", for visualising reactive graph
+#Base "R package installed" check: https://stackoverflow.com/a/38082613/5023561
+is_inst <- function(pkg) {
+  nzchar(system.file(package = pkg))
+}
+
+if(is_inst("reactlog")){
+  cat('Reactlog installed, enabling. Use CTRL/CMD + F3 to open reactive graph plot.\n')
+  options(shiny.reactlog = TRUE)
+}
 
 # inputs ------------------------------------------------------------------
 
@@ -358,7 +368,7 @@ function(input, output) {
     )
   })
   
-  ## generate plot -----
+  ## generate plots -----
   source('plot_widgets.R')
   output$plot <-
     renderPlotly({

@@ -141,7 +141,10 @@ fluidPage(
                   
                   tabPanel("mapTab", 
                            sidebarLayout(
-                             sidebarPanel(map_input_panel()),
+                             sidebarPanel(
+                               map_input_panel(),
+                               plotlyOutput("3Dmap")
+                               ),
                              mainPanel(
                                leafletOutput("map", height = 1000))
                              ) 
