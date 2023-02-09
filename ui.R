@@ -50,7 +50,7 @@ summary_input_panel <-
       inputId = 'area_chosen',
       label = 'Area to summarise',
       choices = area_options,
-#      selected = 'Bedford',
+     selected = 'Sheffield',
       selectize = T
     )
   }
@@ -139,7 +139,7 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   about_tab_panel('About'),
                   
-                  tabPanel("mapTab", 
+                  tabPanel("Map", 
                            sidebarLayout(
                              sidebarPanel(
                                map_input_panel(),
