@@ -44,12 +44,20 @@ map_input_panel <-
         )
   }
 
+area_searcher_panel <-
+  function(){
+#    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
+    selectizeInput("postcode_chosen", "Or input your postcode:",
+                   choices = NULL, ## do this clientsize
+                   options=list(maxOptions=2)
+    )
+  }
 
 summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'Area to summarise',
+      label = 'Click the map or input your region',
       choices = area_options,
      selected = 'Sheffield',
       selectize = T
@@ -91,7 +99,7 @@ summary_panel <-
   function(title){
     tabPanel(
       title,
-      fluidRow(width = 12, summary_input_panel()), 
+#      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
         column(5, plotlyOutput("plot")),
@@ -166,8 +174,9 @@ fluidPage(
                                p(
                                  'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers'
                                ),
-                               
+                               summary_input_panel(),
                                map_input_panel(),
+                               area_searcher_panel(),
                                plotlyOutput("3Dmap"),
                                textOutput('ttwa_writeup')
 

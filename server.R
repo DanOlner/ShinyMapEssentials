@@ -22,8 +22,10 @@ ttwa <- readRDS('data/ttwa.rds')
 #FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
 frontiers.original.list <- readRDS('data/frontiers_list.rds')
 
+## postcode lookup 
+postcode_lookup <- readRDS('data/postcode lookup table.rds')
 
-
+postcode_options <- postcode_lookup$pcd
 
 #Filter phi, keep values above cutoff (in function so can be set by user)
 #Function loaded in global.R
@@ -115,6 +117,12 @@ function(input, output, session) {
     
     }
   )
+  
+  ## Serverside postcode select 
+  updateSelectizeInput(inputId = 'postcode_chosen',
+                       choices = postcode_options,
+                       server = T)
+  
   
   ## Example write up 
   
