@@ -63,11 +63,28 @@ about_tab_panel <-
                ),
              fluidRow(
                column(width = 11, download_data(), offset = 1)
+             ),
+             fluidRow(
+               column(width = 11, offset = 1,
+                      span(
+                        img(
+                          src = 'esrc logo.JPG',
+                          width = "40%",
+                          inline = T
+                        ),
+                        img(
+                          src = 'nordf logo.png',
+                          width = "40%",
+                          inline = T
+                        )
+                      )
+               )
              )
              
     )
   }
 
+  
 
 summary_panel <-
   function(title){
@@ -103,7 +120,9 @@ diag_panel <-
 fluidPage(
   
   # App title ----
-  titlePanel("Life at the Frontiers"),
+  titlePanel(title = 
+               span("Life at the Frontiers", img(src = 'latf logo.PNG', height = 35))
+             ),
   
   ## theme to look diff
   theme = bs_theme(version = 5, bootswatch = 'lux'), 
