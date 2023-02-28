@@ -22,6 +22,9 @@ ttwa <- readRDS('data/ttwa.rds')
 #FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
 frontiers.original.list <- readRDS('data/frontiers_list.rds')
 
+
+
+
 #Filter phi, keep values above cutoff (in function so can be set by user)
 #Function loaded in global.R
 x <- proc.time()
@@ -71,7 +74,10 @@ ttwa <- ttwa %>%
   mutate(
     IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)),
     Dissimilarity_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Other_index = sample.int(length(ttwa11nm), length(ttwa11nm))
+    Other_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
+    
+    frontier_rank = sample.int(length(ttwa11nm), length(ttwa11nm)) %>% toOrdinal(),
+    di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
   )
 
 #UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
@@ -104,7 +110,7 @@ function(input, output, session) {
   observeEvent(input$area_chosen,{
     
     reactive_values$area_chosen <- input$area_chosen
-    
+
     cat('area chosen observe triggered.\n')
     
     }
@@ -115,6 +121,11 @@ function(input, output, session) {
   get_area_stats <-
     reactive({
       lsoa %>% filter(ttwa == reactive_values$area_chosen)
+    })
+  
+  get_ttwa_tab <-
+    reactive({
+      ttwa %>% filter(ttwa11nm == reactive_values$area_chosen)
     })
   
   output$write1 <-
@@ -135,11 +146,18 @@ function(input, output, session) {
         )
     })
     
-  output$write2 <-
+  output$ttwa_writeup <-
     renderText({
       paste(
         reactive_values$area_chosen,
-        'has these stats xx and yy '
+        'is the ',
+        get_ttwa_tab()$di_rank[1],
+        ' most segregated region (out of 173) in England and Wales according to the 2011 census. ',
+        reactive_values$area_chosen,
+        ' is also ranked ',
+        get_ttwa_tab()$frontier_rank[1],
+        '  (out of 173) for frontier density.'
+        
       )
     })
   

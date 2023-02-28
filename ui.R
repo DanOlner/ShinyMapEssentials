@@ -169,7 +169,7 @@ fluidPage(
                                
                                map_input_panel(),
                                plotlyOutput("3Dmap"),
-                               textOutput('write2')
+                               textOutput('ttwa_writeup')
 
                                ),
                              mainPanel(
