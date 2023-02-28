@@ -1,4 +1,3 @@
-
 # Welcome!
 
 This website is dedicated to collating and disseminating research on 'social frontiers', particularly outputs from the three-year  2020-2023 'Life at the Frontier' project (funded by [Nordforsk](https://www.nordforsk.org/) and the [Economic and Social Research Council](https://esrc.ukri.org/)). 
@@ -9,9 +8,9 @@ Our concern is that social frontiers also impede education and employment outcom
 
 Our pioneering programme of research will examine the impact of social frontiers on social mobility and their implications for integration using a combination of detailed qualitative research and pioneering quantitative methods.
 
+Feel free to explore the data tabs to see the location of frontiers and segregation statistics for each region in England and Wales.
 
 **For further information**
 
-Contact us at: info@lifeatthefrontier.org  
-All resources related to the project can be found at the LATF website (https://www.lifeatthefrontier.org/) or the project [GitHub page](https://github.com/life-at-the-frontier).
-This webpage was created by [Meng Le Zhang](meng_le.zhang@sheffield.ac.uk)  and [Dan Olner](d.olner@sheffield.ac.uk) with R Shiny.
+Contact us at: [info\@lifeatthefrontier.org](mailto:info@lifeatthefrontier.org){.email}\
+All resources related to the project can be found at the LATF website (<https://www.lifeatthefrontier.org/>) or the project [GitHub page](https://github.com/life-at-the-frontier). This webpage was created by [Meng Le Zhang](meng_le.zhang@sheffield.ac.uk) and [Dan Olner](d.olner@sheffield.ac.uk) with R Shiny.

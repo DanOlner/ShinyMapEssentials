@@ -32,6 +32,7 @@ download_data <-
     downloadLink('download_app_data', 'Download dashboard data')
   }
 
+
 map_input_panel <-
   function(){
      selectInput(
@@ -164,14 +165,16 @@ fluidPage(
                                map_input_panel(),
                                plotlyOutput("3Dmap")
                                ),
+                               h4(strong("Explore Frontiers")),
+                               p(
+                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers'
+                               )
                              mainPanel(
                                leafletOutput("map", height = 1000))
                              ) 
                            ),
-                  # tabPanel("mapTab", div(class="outer", leafletOutput("map", height = 1000))),
-  #                tabPanel("plotTab", plotlyOutput("plot")),
                   summary_panel('Summary and plots'),
-  diag_panel('diagnostics')
+    diag_panel('diagnostics')
                   )                
       )
       
