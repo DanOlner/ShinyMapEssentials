@@ -135,6 +135,14 @@ function(input, output, session) {
         )
     })
     
+  output$write2 <-
+    renderText({
+      paste(
+        reactive_values$area_chosen,
+        'has these stats xx and yy '
+      )
+    })
+  
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~
   #MAP CODE------------------

@@ -168,7 +168,9 @@ fluidPage(
                                ),
                                
                                map_input_panel(),
-                               plotlyOutput("3Dmap")
+                               plotlyOutput("3Dmap"),
+                               textOutput('write2')
+
                                ),
                              mainPanel(
                                leafletOutput("map", height = 1000))
