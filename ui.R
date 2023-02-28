@@ -162,17 +162,20 @@ fluidPage(
                   tabPanel("Map", 
                            sidebarLayout(
                              sidebarPanel(
-                               map_input_panel(),
-                               plotlyOutput("3Dmap")
-                               ),
                                h4(strong("Explore Frontiers")),
                                p(
                                  'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers'
-                               )
+                               ),
+                               
+                               map_input_panel(),
+                               plotlyOutput("3Dmap")
+                               ),
                              mainPanel(
                                leafletOutput("map", height = 1000))
-                             ) 
+                           ) 
                            ),
+                            
+                          
                   summary_panel('Summary and plots'),
     diag_panel('diagnostics')
                   )                
