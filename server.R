@@ -19,13 +19,14 @@ la <- readRDS('data/localauthoritymap_w_IMDsummarydata.rds')
 #
 ttwa <- readRDS('data/ttwa.rds')
 
+
 #FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
 frontiers.original.list <- readRDS('data/frontiers_list.rds')
 
 ## postcode lookup 
 postcode_lookup <- readRDS('data/postcode lookup table.rds')
 
-postcode_options <- postcode_lookup$pcd
+postcode_options <- postcode_lookup$pcd_area
 
 #Filter phi, keep values above cutoff (in function so can be set by user)
 #Function loaded in global.R
@@ -102,7 +103,7 @@ reactive_values <-
   )
 
 # server.R ----------------------------------------------------------------
-
+ttwa
 
 function(input, output, session) {
   
@@ -117,6 +118,20 @@ function(input, output, session) {
     
     }
   )
+  
+  observeEvent(input$postcode_chosen,{
+    
+    data_chosen <- 
+      (postcode_lookup %>%
+      filter(pcd_area == input$postcode_chosen)
+      )
+    reactive_values$area_chosen <- data_chosen$ttwa[1]
+    
+    cat('ttwa chosen observe triggered.\n')
+    
+  }
+  )
+  
   
   ## Serverside postcode select 
   updateSelectizeInput(inputId = 'postcode_chosen',

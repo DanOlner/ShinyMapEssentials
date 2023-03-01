@@ -47,7 +47,7 @@ map_input_panel <-
 area_searcher_panel <-
   function(){
 #    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
-    selectizeInput("postcode_chosen", "Or input your postcode:",
+    selectizeInput("postcode_chosen", "Or input the first part of your postcode:",
                    choices = NULL, ## do this clientsize
                    options=list(maxOptions=2)
     )
