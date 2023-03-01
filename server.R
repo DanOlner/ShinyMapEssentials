@@ -136,9 +136,10 @@ function(input, output, session) {
   ## Serverside postcode select 
   updateSelectizeInput(inputId = 'postcode_chosen',
                        choices = postcode_options,
+                       selected = '',
                        server = T)
   
-  
+
   ## Example write up 
   
   get_area_stats <-
@@ -171,16 +172,20 @@ function(input, output, session) {
     
   output$ttwa_writeup <-
     renderText({
-      paste(
-        reactive_values$area_chosen,
-        'is the ',
-        get_ttwa_tab()$di_rank[1],
-        ' most segregated region (out of 173) in England and Wales according to the 2011 census. ',
-        reactive_values$area_chosen,
-        ' is also ranked ',
-        get_ttwa_tab()$frontier_rank[1],
-        '  (out of 173) for frontier density.'
-        
+      ifelse(
+        is.na(reactive_values$area_chosen), 
+        'No area selected or region not found',
+        paste(
+          reactive_values$area_chosen,
+          'is the ',
+          get_ttwa_tab()$di_rank[1],
+          ' most segregated region (out of 173) in England and Wales according to the 2011 census. ',
+          reactive_values$area_chosen,
+          ' is also ranked ',
+          get_ttwa_tab()$frontier_rank[1],
+          '  (out of 173) for frontier density.'
+          
+        )
       )
     })
   

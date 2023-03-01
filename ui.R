@@ -23,7 +23,7 @@ toplevel_colname_options <-
   )
 
 area_options <- 
-  ttwa$ttwa11nm %>% unique
+  c('', ttwa$ttwa11nm %>% unique)
 
 # ui elements  --------------------------------------------------------------
 
@@ -59,7 +59,7 @@ summary_input_panel <-
       inputId = 'area_chosen',
       label = 'Click the map or input your region',
       choices = area_options,
-     selected = 'Sheffield',
+     selected = '',
       selectize = T
     )
   }
