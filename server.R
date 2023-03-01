@@ -80,8 +80,8 @@ ttwa <- ttwa %>%
     Other_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
     
     frontier_stat = sample.int(length(ttwa11nm), length(ttwa11nm)), ## high = more
-    frontier_rank = (frontier_stat * -1) %>% rank(ties.method = 'first') %>% toOrdinal(),
-    di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
+#    frontier_rank = (frontier_stat * -1) %>% rank(ties.method = 'first') %>% toOrdinal(),
+#    di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
   )
 
 
@@ -97,14 +97,13 @@ areas_no_geom <-
 st_geometry(areas_no_geom) <- NULL
 
 
-
 ## Assign reactive value that will be used throughout
 reactive_values <- 
   reactiveValues(
     area_chosen = NULL,
-    most_segregated = (ttwa %>% filter(di_rank == '1st'))$ttwa[1],
+    most_segregated = (ttwa %>% filter(di_rank_txt == '1st'))$ttwa[1],
     least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
-    most_frontier = (ttwa %>% filter(frontier_rank == '1st'))$ttwa[1],
+    most_frontier = (ttwa %>% filter(frontier_rank_txt == '1st'))$ttwa[1],
     least_frontier = (ttwa %>% filter(frontier_stat == min(frontier_stat)))$ttwa[1]
     
   )
@@ -215,11 +214,11 @@ function(input, output, session) {
         paste(
           reactive_values$area_chosen,
           'is the ',
-          get_ttwa_tab()$di_rank[1],
+          get_ttwa_tab()$di_rank_txt[1],
           ' most segregated region (out of 173) in England and Wales according to the 2011 census. ',
           reactive_values$area_chosen,
           ' is also ranked ',
-          get_ttwa_tab()$frontier_rank[1],
+          get_ttwa_tab()$frontier_rank_txt[1],
           '  (out of 173) for frontier density.'
           
         )
