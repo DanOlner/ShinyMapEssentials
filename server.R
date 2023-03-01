@@ -79,9 +79,11 @@ ttwa <- ttwa %>%
     Dissimilarity_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
     Other_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
     
-    frontier_rank = sample.int(length(ttwa11nm), length(ttwa11nm)) %>% toOrdinal(),
+    frontier_stat = sample.int(length(ttwa11nm), length(ttwa11nm)), ## high = more
+    frontier_rank = (frontier_stat * -1) %>% rank(ties.method = 'first') %>% toOrdinal(),
     di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
   )
+
 
 #UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
 #SETTING TO TTWA FOR NOW (IN SERVER)
@@ -99,11 +101,16 @@ st_geometry(areas_no_geom) <- NULL
 ## Assign reactive value that will be used throughout
 reactive_values <- 
   reactiveValues(
-    area_chosen = NULL
+    area_chosen = NULL,
+    most_segregated = (ttwa %>% filter(di_rank == '1st'))$ttwa[1],
+    least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
+    most_frontier = (ttwa %>% filter(frontier_rank == '1st'))$ttwa[1],
+    least_frontier = (ttwa %>% filter(frontier_stat == min(frontier_stat)))$ttwa[1]
+    
   )
 
+
 # server.R ----------------------------------------------------------------
-ttwa
 
 function(input, output, session) {
   
@@ -151,6 +158,36 @@ function(input, output, session) {
     reactive({
       ttwa %>% filter(ttwa11nm == reactive_values$area_chosen)
     })
+  
+  
+  output$frontier_summary <-
+    renderText({
+      paste(
+        'A plot of regions by frontier concentration is plotted opposite. ',
+        reactive_values$most_frontier,
+        ' has the largest concentration of social frontiers whilst ',
+        reactive_values$least_frontier,
+        ' has the lowest concentration of social frontiers. ',
+        'Across all areas in the England and Wales, the most segregated area is ',
+        reactive_values$most_segregated,
+        ' (as measured by the dissimilarity index) whilst the least segregated area is ',
+        reactive_values$least_segregated,
+        '. '
+      )
+    })
+  
+
+  
+  output$relationship_summary <-
+    renderText({
+      paste(
+        'placehoder text for ',
+        reactive_values$area_chosen,
+        '. '
+      )
+    })
+  
+  
   
   output$write1 <-
     renderText({

@@ -29,7 +29,7 @@ area_options <-
 
 download_data <-
   function(){
-    downloadLink('download_app_data', 'Download dashboard data')
+    downloadLink('download_app_data', 'Click here to download dashboard data')
   }
 
 
@@ -71,9 +71,6 @@ about_tab_panel <-
                column(width = 11, includeMarkdown("./assets/about.md"), offset = 1)
                ),
              fluidRow(
-               column(width = 11, download_data(), offset = 1)
-             ),
-             fluidRow(
                column(width = 11, offset = 1,
                       span(
                         img(
@@ -102,25 +99,29 @@ summary_panel <-
 #      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
-        column(5, plotlyOutput("plot")),
-        column(width = 6, textOutput('write1'), offset = 1)
-      ),
-      fluidRow(
-        column(width = 6, 
+        column(width = 5, 
                h4('Overall relationship between frontiers and segregation'),
                p('Here is the relationship')),
-        column(width = 6, verbatimTextOutput("summary"))
+        column(width = 6, textOutput('frontier_summary'), offset = 1)
+      ),
+      fluidRow(
+        column(5, plotlyOutput("plot")),
+        column(width = 6, verbatimTextOutput("relationship_summary"), offset = 1)
       )
       
     )
   }
 
-diag_panel <-
+method_panel <-
   function(title){
     tabPanel(title,
              fluidRow(
-               p('some text')
+               column(width = 11, includeMarkdown("./assets/methods.md"), offset = 1)
+             ),
+             fluidRow(
+               column(width = 11, download_data(), offset = 1)
              )
+             
              )
   }
 
@@ -188,7 +189,7 @@ fluidPage(
                             
                           
                   summary_panel('Summary and plots'),
-    diag_panel('diagnostics')
+    method_panel('Data and methods')
                   )                
       )
       
