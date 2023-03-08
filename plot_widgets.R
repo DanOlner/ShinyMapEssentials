@@ -1,14 +1,12 @@
 library(ggplot2)
 library(plotly)
 
-
 scatter_widget <-
-  function(data, x, y, id_text){
+  function(data){
     p <- ggplot(
-      data = data, aes_string(x = x, y = y, text = id_text)
+      data = data, aes_string(x ='di', y = 'frontier_stat', text = 'ttwa11nm', colour = 'frontier_stat')
       ) + 
       geom_point(
-        aes_string(colour = y)
       ) 
     ggplotly(p)
   }
@@ -16,5 +14,5 @@ scatter_widget <-
 
 ## Example
 #https://stackoverflow.com/questions/5106782/use-of-ggplot-within-another-function-in-r
-#scatter_widget(la)
+scatter_widget(ttwa)
 

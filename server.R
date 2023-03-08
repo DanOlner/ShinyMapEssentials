@@ -591,7 +591,7 @@ function(input, output, session) {
   source('plot_widgets.R')
   output$plot <-
     renderPlotly({
-      scatter_widget(data = ttwa, x = 'di', y = 'frontier_stat', id_text = 'ttwa11nm')
+      scatter_widget(data = ttwa)
     })
 
   # Generate an HTML table view of the data ----
