@@ -121,8 +121,23 @@ function(input, output, session) {
     # reactive_values$area_chosen <- input$area_chosen
 
     cat('input$area_chosen observe triggered.\n')
-
-    }
+    
+    #problem this fixes: input invalidates as soon as a letter is deleted.
+    #Could also use on of these as well, but let's just check the field is sensible before changing
+    #https://shiny.rstudio.com/reference/shiny/1.7.0/debounce.html
+    if(isolate(input$area_chosen) %in% ttwa$ttwa11nm){
+    
+      drawLSOAs(isolate(map_df()))
+      
+      cat('And TTWA found.\n')
+      
+    } else (
+      
+      cat('... but TTWA not found yet. Hang on. \n')
+      
+    )
+    
+    }, ignoreInit = T
   )
   
   observeEvent(input$postcode_chosen,{
@@ -266,7 +281,7 @@ function(input, output, session) {
       opacity = 0.7,
       fillOpacity = 0.5,
       group = "top level geography",
-      highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = TRUE)
+      highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = FALSE)
     ) 
     
   }
@@ -285,10 +300,11 @@ function(input, output, session) {
     #Draw first, so overlaid
     # mapdata <- map_df()
     
-    # cat("reactive_values$area_chosen is ", reactive_values$area_chosen,"\n")
+    #get bounding box for selected ttwa for zooming map
+    bbox = st_bbox(mapdata %>% filter(ttwa11nm==isolate(input$area_chosen)))
     
     #Remove currently selected TTWA
-    mapdata <- mapdata %>% filter(ttwa11nm!=reactive_values$area_chosen)
+    mapdata <- mapdata %>% filter(ttwa11nm!=isolate(input$area_chosen))
     
     #Set scope higher so drawttwas function can use without passing
     toplevelgeog_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
@@ -325,6 +341,13 @@ function(input, output, session) {
         opacity = 1,
         group = "toplevelgeog_outline"
       )
+    
+    
+    #Centre on TTWA in focus
+    cat('Selected bounding box coords: ',bbox[1],bbox[2],bbox[3],bbox[4],'\n')
+    
+    #Casting is needed, for some reason
+    leafletProxy('map') %>% fitBounds(as.numeric(bbox[1]),as.numeric(bbox[2]),as.numeric(bbox[3]),as.numeric(bbox[4]))
     
   }
   
@@ -373,7 +396,7 @@ function(input, output, session) {
     #Only static elements, observe below will do the dynamics
     #Set zoom fractional jumps for a bit more zoom control
     #https://stackoverflow.com/a/62863122/5023561
-    leaflet(options = leafletOptions(zoomSnap = 0.1, zoomDelta=0.1)) %>%
+    leaflet(options = leafletOptions(zoomSnap = 0.1, zoomDelta=0.1, minZoom = 7)) %>%
       addTiles() %>%
       # setView(lng = -2, lat = 53, zoom = 7.2)#UK wide view
       setView(lng = 0, lat = 51.4, zoom = 10)#London view
@@ -404,7 +427,7 @@ function(input, output, session) {
     #Set scope higher so drawttwas function can use without passing
     toplevelgeog_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
     
-    drawttwas(mapdata)
+    drawLSOAs(mapdata)
     
   })
   
