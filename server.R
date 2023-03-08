@@ -97,6 +97,17 @@ areas_no_geom <-
 st_geometry(areas_no_geom) <- NULL
 
 
+
+# bugfix: TTWA ranks not working properly ---------------------------------
+ttwa %>% filter(frontier_rank %in% 1:2)
+## 1st is called 1nd for some reason 
+ttwa <-
+  ttwa %>% 
+  mutate(frontier_rank_txt = frontier_rank_txt %>% replace(frontier_rank_txt == '1nd', '1st'))
+
+
+
+
 ## Assign reactive value that will be used throughout
 reactive_values <- 
   reactiveValues(

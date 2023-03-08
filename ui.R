@@ -49,7 +49,7 @@ area_searcher_panel <-
 #    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
     selectizeInput("postcode_chosen", "Or input the first part of your postcode:",
                    choices = NULL, ## do this clientsize
-                   options=list(maxOptions=2)
+                   options=list(maxOptions = 5)
     )
   }
 
