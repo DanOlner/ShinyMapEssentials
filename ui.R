@@ -59,7 +59,7 @@ summary_input_panel <-
       inputId = 'area_chosen',
       label = 'Click the map or input your region',
       choices = area_options,
-     selected = '',
+     selected = 'London',
       selectize = T
     )
   }

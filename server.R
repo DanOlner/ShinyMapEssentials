@@ -100,7 +100,7 @@ st_geometry(areas_no_geom) <- NULL
 ## Assign reactive value that will be used throughout
 reactive_values <- 
   reactiveValues(
-    area_chosen = NULL,
+    # area_chosen = 'London',
     most_segregated = (ttwa %>% filter(di_rank_txt == '1st'))$ttwa[1],
     least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
     most_frontier = (ttwa %>% filter(frontier_rank_txt == '1st'))$ttwa[1],
@@ -117,11 +117,11 @@ function(input, output, session) {
   ## reactive to update area chosen 
   ## This will set the TTWA first, from what the default in the input$area_chosen is
   observeEvent(input$area_chosen,{
-    
-    reactive_values$area_chosen <- input$area_chosen
 
-    cat('area chosen observe triggered.\n')
-    
+    # reactive_values$area_chosen <- input$area_chosen
+
+    cat('input$area_chosen observe triggered.\n')
+
     }
   )
   
@@ -131,11 +131,16 @@ function(input, output, session) {
       (postcode_lookup %>%
       filter(pcd_area == input$postcode_chosen)
       )
-    reactive_values$area_chosen <- data_chosen$ttwa[1]
     
-    cat('ttwa chosen observe triggered.\n')
+    # reactive_values$area_chosen <- data_chosen$ttwa[1]
     
-  }
+    #Testing setting just once using same method as in map click
+    updateSelectInput(session, inputId = "area_chosen", selected = data_chosen$ttwa[1])
+    
+    cat('ttwa chosen observe triggered via postcode selection.\n')
+  
+    #We don't want postcode input triggering initially; text input$area_chosen is being the central TTWA store, we don't want to overwrite with NULL  
+  }, ignoreInit = T#https://stackoverflow.com/questions/42165567/prevent-execution-of-observe-on-app-load-in-shiny
   )
   
   
@@ -150,12 +155,12 @@ function(input, output, session) {
   
   get_area_stats <-
     reactive({
-      lsoa %>% filter(ttwa == reactive_values$area_chosen)
+      lsoa %>% filter(ttwa == input$area_chosen)
     })
   
   get_ttwa_tab <-
     reactive({
-      ttwa %>% filter(ttwa11nm == reactive_values$area_chosen)
+      ttwa %>% filter(ttwa11nm == input$area_chosen)
     })
   
   
@@ -181,7 +186,7 @@ function(input, output, session) {
     renderText({
       paste(
         'placehoder text for ',
-        reactive_values$area_chosen,
+        input$area_chosen,
         '. '
       )
     })
@@ -192,10 +197,10 @@ function(input, output, session) {
     renderText({
       paste(
         'This document is a worked example of the social frontier analysis used in Dean et al. and the Czech paper as applied to',
-        reactive_values$area_chosen,
+        input$area_chosen,
         '. ',
         'The goal is to give a quick summary of the method and present interactive results for',
-        reactive_values$area_chosen,
+        isolate(input$area_chosen),
         '. ',
         'The latter is important for judging how accurate the routine is at guessing what where we intuitively imagine frontiers to be.',
         
@@ -209,14 +214,14 @@ function(input, output, session) {
   output$ttwa_writeup <-
     renderText({
       ifelse(
-        is.na(reactive_values$area_chosen), 
+        is.na(input$area_chosen), 
         'No area selected or region not found',
         paste(
-          reactive_values$area_chosen,
+          input$area_chosen,
           'is the ',
           get_ttwa_tab()$di_rank_txt[1],
           ' most segregated region (out of 173) in England and Wales according to the 2011 census. ',
-          reactive_values$area_chosen,
+          input$area_chosen,
           ' is also ranked ',
           get_ttwa_tab()$frontier_rank_txt[1],
           '  (out of 173) for frontier density.'
@@ -235,7 +240,7 @@ function(input, output, session) {
   #Draw TTWAs; function because when zooming in or changing TTWA in other ways
   #needs redrawing without TTWA where LSOAS/frontiers are being shown
   #(And the reverse when zooming out)
-  drawttwas <- function(mapdata, clearall=T){
+  drawttwas <- function(mapdata, clearall=F){
   
     if(clearall){
       leafletProxy("map") %>%
@@ -244,7 +249,12 @@ function(input, output, session) {
       leafletProxy("map") %>% clearGroup("top level geography")
     }
     
-  #Add TTWAs, if needed remove one TTWA if zoomed in to see LSOAS/frontiers
+    
+  #Set scope higher so drawttwas function can use without passing
+  toplevelgeog_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+    
+  #Add TTWAs, if needed remove one TTWA if zoomed in to leave space for LSOAS/frontiers for selected TTWA
+  #(That's done on function input, in drawLSOAs)
   leafletProxy("map") %>% 
     addPolygons(
       data = mapdata,
@@ -263,7 +273,7 @@ function(input, output, session) {
   
   #Draw LSOAS on leaflet for currently selected TTWA
   #Include surrounding TTWA zones (but not the one focused on)
-  drawLSOAs <- function(){
+  drawLSOAs <- function(mapdata){
     
     leafletProxy("map") %>% clearGroup("lsoas")
     leafletProxy("map") %>% clearGroup("frontiers")
@@ -273,7 +283,9 @@ function(input, output, session) {
     
     #Get TTWA map data minus one being focused on
     #Draw first, so overlaid
-    mapdata <- map_df()
+    # mapdata <- map_df()
+    
+    # cat("reactive_values$area_chosen is ", reactive_values$area_chosen,"\n")
     
     #Remove currently selected TTWA
     mapdata <- mapdata %>% filter(ttwa11nm!=reactive_values$area_chosen)
@@ -283,54 +295,55 @@ function(input, output, session) {
     
     drawttwas(mapdata, clearall = F)
     
-    
-    
-    leafletProxy('map') %>% 
+    #Check there are frontiers present for this TTWA.
+    #If not, we don't load any
+    # x <- frontiers.live.list[[reactive_values$area_chosen]]
+    # print(x)
+    # 
+    leafletProxy('map') %>%
       addPolygons(
-        data = lsoa %>% filter(ttwa==reactive_values$area_chosen),
+        data = lsoa %>% filter(ttwa==isolate(input$area_chosen)),
         fillColor = ~lsoapalette(UKborn_percent),
         color = 'black',
         weight = 0.2,
         opacity = 1,
         fillOpacity = 0.5,
         group = "lsoas"
-      ) %>% 
+      ) %>%
       addPolylines(
-        data = frontiers.live.list[[reactive_values$area_chosen]],
+        data = frontiers.live.list[[isolate(input$area_chosen)]],
         color = 'black',
         weight = 3,
         opacity = 1,
         group = "frontiers"
       ) %>%
       addPolygons(
-        data = toplevelgeog %>% filter(ttwa11nm == reactive_values$area_chosen),
+        data = toplevelgeog %>% filter(ttwa11nm == isolate(input$area_chosen)),
         fill = F,
         color = 'white',
         weight = 8,
         opacity = 1,
         group = "toplevelgeog_outline"
-      ) 
+      )
     
   }
   
   
   #Find TTWA under map's current centre point
-  findTTWAunderMapCentrePoint <- function(){
-    
-    #Find TTWA under centre point
-    centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
-    
-    #TTWA under the central point
-    toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
-    
-    print(toplevelgeog_underpoint$ttwa11nm)
-    
-    reactive_values$area_chosen <- toplevelgeog_underpoint$ttwa11nm
-    
-  }
-  
-  
-  
+  # findTTWAunderMapCentrePoint <- function(){
+  #   
+  #   #Find TTWA under centre point
+  #   centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
+  #   
+  #   #TTWA under the central point
+  #   toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
+  #   
+  #   print(toplevelgeog_underpoint$ttwa11nm)
+  #   
+  #   reactive_values$area_chosen <- toplevelgeog_underpoint$ttwa11nm
+  #   
+  # }
+
   
   
 
@@ -362,14 +375,14 @@ function(input, output, session) {
     #https://stackoverflow.com/a/62863122/5023561
     leaflet(options = leafletOptions(zoomSnap = 0.1, zoomDelta=0.1)) %>%
       addTiles() %>%
-      setView(lng = -2, lat = 53, zoom = 7.2)
+      # setView(lng = -2, lat = 53, zoom = 7.2)#UK wide view
+      setView(lng = 0, lat = 51.4, zoom = 10)#London view
     
   })
   
   #https://stackoverflow.com/a/62701468/5023561
   #For making sure data loads to map on initial load
   outputOptions(output, "map", suspendWhenHidden = FALSE)
-  
   
   
   #Add initial dynamic elements, the TTWA choropleth overlay
@@ -401,169 +414,112 @@ function(input, output, session) {
     
     event <- input$map_shape_click
     print( event )
-    updateSelectInput(session, inputId = "area_chosen", selected = event$id
-    )
+    updateSelectInput(session, inputId = "area_chosen", selected = event$id)
     
   }) 
 
   
-  observeEvent(input$map_zoom, {
-    
-    zoomvalue <<- input$map_zoom
-    cat("Observe zoom, map zoom: ",zoomvalue,"\n")
-    
-    #Change view based on zoom
-    #Zoom out is purely TTWA
-    #Zoom in puts LSOAs / frontiers at centre of map but keeps surrounding TTWAs
-    if(zoomvalue <= 9){
-      
-      LSOAzoomlevel <<- FALSE
-      
-      leafletProxy("map") %>% clearGroup("lsoas")
-      leafletProxy("map") %>% clearGroup("frontiers")
-      leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
-      
-      mapdata <- map_df()
-      
-      #Reactively change palette if change of top level variable
-      #https://rstudio.github.io/leaflet/choropleths.html
-      #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
-      
-      #Set scope higher so drawttwas function can use without passing
-      toplevelgeog_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
-      
-      cat('Attempting map zoom out TTWA re-draw\n')
-      drawttwas(mapdata)
-      
-      lastzoomvalue = zoomvalue
-      
-    } else if(!LSOAzoomlevel)  {
-      
-      #Set outside for loop scope
-      LSOAzoomlevel <<- TRUE
-      
-      findTTWAunderMapCentrePoint()
-      
-      drawLSOAs()
-      
-      # leafletProxy('map')%>% 
-      #   addPolygons(
-      #     data = lsoa %>% filter(ttwa==reactive_values$area_chosen),
-      #     fillColor = ~lsoapalette(UKborn_percent),
-      #     color = 'black',
-      #     weight = 0.2,
-      #     opacity = 1,
-      #     fillOpacity = 0.5,
-      #     group = "lsoas"
-      #   ) %>% 
-      #   addPolylines(
-      #     data = frontiers.live.list[[reactive_values$area_chosen]],
-      #     color = 'black',
-      #     weight = 3,
-      #     opacity = 1,
-      #     group = "frontiers"
-      #   ) %>%
-      #   addPolygons(
-      #     data = toplevelgeog %>% filter(ttwa11nm == reactive_values$area_chosen),
-      #     fill = F,
-      #     color = 'white',
-      #     weight = 8,
-      #     opacity = 1,
-      #     group = "toplevelgeog_outline"
-      #   ) 
-      
-    }
-    
-  })
-  
-  
-  #Dragend event not implemented in r/leaflet
-  #But MAPID_bounds and MAPID_center is triggered at the end of a drag, phew
-  observeEvent(input$map_center, {
-    
-    cat("Observe center map point: ")
-    
-    #https://rstudio.github.io/leaflet/shiny.html
-    #lat and lon in a list
-    cat(input$map_center[[1]],",",input$map_center[[2]],"\n")
-    
-    
-    #If we're at LSOA zoom level
-    #We want to check we're still displaying the same LSOA set
-    #Or whether we need to change
-    if(LSOAzoomlevel){
-    
-      #Find top level geography underneath this point
-      #It's not necessarily shown, so use the sf itself
-      centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
-      
-      #TTWA under the central point
-      toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
-      
-      print(toplevelgeog_underpoint$ttwa11nm)
-      
-      #Chance the centerpoint check may not have picked up a higher level geog
-      #If so, keep the older one so app doesn't break
-      #Older one will be kept by default, just need to not act
-      # cat("length of top level geography filter: ", length(toplevelgeog_underpoint$ttwa11nm))
-      
-      #If top level geography if different from last drag
-      #Update the LSOAs underneath
-      #Note, needs length check first cos if conditional can't cope with length zero, like a numpty
-      if(length(toplevelgeog_underpoint$ttwa11nm) > 0){
-      
-        if(lastTopLevelGeography != toplevelgeog_underpoint$ttwa11nm){
-          
-          cat("Updating geography\n")
-          
-          #Set outside of scope
-          lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
-        
-          reactive_values$area_chosen <- toplevelgeog_underpoint$ttwa11nm
-          
-          drawLSOAs()
-          
-          # leafletProxy("map") %>% clearGroup("lsoas")
-          # leafletProxy("map") %>% clearGroup("frontiers")
-          # leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
-          # 
-          # leafletProxy('map') %>% 
-          #   addPolygons(
-          #     data = lsoa %>% filter(ttwa==toplevelgeog_underpoint$ttwa11nm),
-          #     fillColor = ~lsoapalette(UKborn_percent),
-          #     color = 'black',
-          #     weight = 0.2,
-          #     opacity = 1,
-          #     fillOpacity = 0.5,
-          #     group = "lsoas"
-          #   ) %>% 
-          #   addPolylines(
-          #     data = frontiers.live.list[[toplevelgeog_underpoint$ttwa11nm]],
-          #     color = 'black',
-          #     weight = 3,
-          #     opacity = 1,
-          #     group = "frontiers"
-          #   ) %>%
-          #   addPolygons(
-          #     data = toplevelgeog %>% filter(ttwa11nm == toplevelgeog_underpoint$ttwa11nm),
-          #     fill = F,
-          #     color = 'white',
-          #     weight = 8,
-          #     opacity = 1,
-          #     group = "toplevelgeog_outline"
-          #   ) 
-
-          
-        
-        }#end if lastTopLevelGeography
-        
-      }#end if length
-      
-    }#end if LSOA zoom level
-    
-    
-  })
-  
+  # observeEvent(input$map_zoom, {
+  #   
+  #   zoomvalue <<- input$map_zoom
+  #   cat("Observe zoom, map zoom: ",zoomvalue,"\n")
+  #   
+  #   #Change view based on zoom
+  #   #Zoom out is purely TTWA
+  #   #Zoom in puts LSOAs / frontiers at centre of map but keeps surrounding TTWAs
+  #   if(zoomvalue <= 9){
+  #     
+  #     LSOAzoomlevel <<- FALSE
+  #     
+  #     leafletProxy("map") %>% clearGroup("lsoas")
+  #     leafletProxy("map") %>% clearGroup("frontiers")
+  #     leafletProxy("map") %>% clearGroup("toplevelgeog_outline")
+  #     
+  #     mapdata <- map_df()
+  #     
+  #     #Reactively change palette if change of top level variable
+  #     #https://rstudio.github.io/leaflet/choropleths.html
+  #     #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
+  #     
+  #     #Set scope higher so drawttwas function can use without passing
+  #     toplevelgeog_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+  #     
+  #     cat('Attempting map zoom out TTWA re-draw\n')
+  #     drawttwas(mapdata)
+  #     
+  #     lastzoomvalue = zoomvalue
+  #     
+  #   } else if(!LSOAzoomlevel)  {
+  #     
+  #     #Set outside for loop scope
+  #     LSOAzoomlevel <<- TRUE
+  #     
+  #     findTTWAunderMapCentrePoint()
+  #     
+  #     drawLSOAs()
+  #    
+  #   }
+  #   
+  # })
+  # 
+  # 
+  # #Dragend event not implemented in r/leaflet
+  # #But MAPID_bounds and MAPID_center is triggered at the end of a drag, phew
+  # observeEvent(input$map_center, {
+  #   
+  #   cat("Observe center map point: ")
+  #   
+  #   #https://rstudio.github.io/leaflet/shiny.html
+  #   #lat and lon in a list
+  #   cat(input$map_center[[1]],",",input$map_center[[2]],"\n")
+  #   
+  #   
+  #   #If we're at LSOA zoom level
+  #   #We want to check we're still displaying the same LSOA set
+  #   #Or whether we need to change
+  #   if(LSOAzoomlevel){
+  #   
+  #     #Find top level geography underneath this point
+  #     #It's not necessarily shown, so use the sf itself
+  #     centerpoint = st_sfc(x = st_point(c(input$map_center[[1]],input$map_center[[2]])), crs = st_crs(toplevelgeog))
+  #     
+  #     #TTWA under the central point
+  #     toplevelgeog_underpoint <- st_intersection(toplevelgeog, centerpoint)
+  #     
+  #     print(toplevelgeog_underpoint$ttwa11nm)
+  #     
+  #     #Chance the centerpoint check may not have picked up a higher level geog
+  #     #If so, keep the older one so app doesn't break
+  #     #Older one will be kept by default, just need to not act
+  #     # cat("length of top level geography filter: ", length(toplevelgeog_underpoint$ttwa11nm))
+  #     
+  #     #If top level geography if different from last drag
+  #     #Update the LSOAs underneath
+  #     #Note, needs length check first cos if conditional can't cope with length zero, like a numpty
+  #     if(length(toplevelgeog_underpoint$ttwa11nm) > 0){
+  #     
+  #       if(lastTopLevelGeography != toplevelgeog_underpoint$ttwa11nm){
+  #         
+  #         cat("Updating geography\n")
+  #         
+  #         #Set outside of scope
+  #         lastTopLevelGeography <<- toplevelgeog_underpoint$ttwa11nm
+  #       
+  #         reactive_values$area_chosen <- toplevelgeog_underpoint$ttwa11nm
+  #         
+  #         drawLSOAs()
+  #         
+  #         
+  #       
+  #       }#end if lastTopLevelGeography
+  #       
+  #     }#end if length
+  #     
+  #   }#end if LSOA zoom level
+  #   
+  #   
+  # })
+  # 
   
   
   # Download handlers -----------------
