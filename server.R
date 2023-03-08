@@ -75,13 +75,7 @@ la <-
 
 ttwa <- ttwa %>% 
   mutate(
-    IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Dissimilarity_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Other_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    
-    frontier_stat = sample.int(length(ttwa11nm), length(ttwa11nm)), ## high = more
-#    frontier_rank = (frontier_stat * -1) %>% rank(ties.method = 'first') %>% toOrdinal(),
-#    di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
+    IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)) ## this is still needed for some reason
   )
 
 
@@ -96,17 +90,7 @@ areas_no_geom <-
   lsoa
 st_geometry(areas_no_geom) <- NULL
 
-
-
-# bugfix: TTWA ranks not working properly ---------------------------------
-ttwa %>% filter(frontier_rank %in% 1:2)
-## 1st is called 1nd for some reason 
-ttwa <-
-  ttwa %>% 
-  mutate(frontier_rank_txt = frontier_rank_txt %>% replace(frontier_rank_txt == '1nd', '1st'))
-
-
-
+ 
 
 ## Assign reactive value that will be used throughout
 reactive_values <- 
@@ -115,9 +99,10 @@ reactive_values <-
     most_segregated = (ttwa %>% filter(di_rank_txt == '1st'))$ttwa[1],
     least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
     most_frontier = (ttwa %>% filter(frontier_rank_txt == '1st'))$ttwa[1],
-    least_frontier = (ttwa %>% filter(frontier_stat == min(frontier_stat)))$ttwa[1]
+    least_frontier = (ttwa %>% arrange(frontier_stat))$ttwa[1]
     
   )
+
 
 
 # server.R ----------------------------------------------------------------
@@ -606,9 +591,9 @@ function(input, output, session) {
   source('plot_widgets.R')
   output$plot <-
     renderPlotly({
-      scatter_widget(data = la)
+      scatter_widget(data = ttwa, x = 'di', y = 'frontier_stat', id_text = 'ttwa11nm')
     })
-  
+
   # Generate an HTML table view of the data ----
   source('table_widget.R')
   output$table <- DT::renderDataTable({

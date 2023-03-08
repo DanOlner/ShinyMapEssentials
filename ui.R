@@ -57,12 +57,16 @@ summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'Click the map or input your region',
+      label = 'To see statistics, hover over a map region or input your region below:',
       choices = area_options,
      selected = '',
       selectize = T
     )
   }
+
+# Panel layouts -----------------------------------------------------------
+
+
 
 about_tab_panel <- 
   function(title){
@@ -99,14 +103,17 @@ summary_panel <-
 #      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
-        column(width = 5, 
-               h4('Overall relationship between frontiers and segregation'),
-               p('Here is the relationship')),
+        column(5, plotlyOutput("plot")),
+        
         column(width = 6, textOutput('frontier_summary'), offset = 1)
       ),
       fluidRow(
-        column(5, plotlyOutput("plot")),
-        column(width = 6, verbatimTextOutput("relationship_summary"), offset = 1)
+        column(width = 6, verbatimTextOutput("relationship_summary"), offset = 1),
+        
+        column(width = 5, 
+               h4('Summary for region'),
+               p('Here is the relationship'))
+        
       )
       
     )
@@ -173,7 +180,7 @@ fluidPage(
                              sidebarPanel(
                                h4(strong("Explore Frontiers")),
                                p(
-                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers'
+                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
                                ),
                                summary_input_panel(),
                                map_input_panel(),

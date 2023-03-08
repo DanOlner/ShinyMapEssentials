@@ -3,12 +3,12 @@ library(plotly)
 
 
 scatter_widget <-
-  function(data){
+  function(data, x, y, id_text){
     p <- ggplot(
-      data = data, aes_string(x = 'IMD_rank', y = 'frontier_rank', text = 'NAME')
+      data = data, aes_string(x = x, y = y, text = id_text)
       ) + 
       geom_point(
-        aes(colour = frontier_rank)
+        aes_string(colour = y)
       ) 
     ggplotly(p)
   }
