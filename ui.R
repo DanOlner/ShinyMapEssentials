@@ -103,18 +103,24 @@ summary_panel <-
 #      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
-        column(5, plotlyOutput("plot")),
+        column(6, plotlyOutput("rank_plot")),
         
-        column(width = 6, textOutput('frontier_summary'), offset = 1)
+        column(5, offset = 1,
+          includeMarkdown("./assets/definitions.md")
+        )
       ),
       fluidRow(
-        column(width = 6, verbatimTextOutput("relationship_summary"), offset = 1),
-        
         column(width = 5, 
-               h4('Summary for region'),
-               p('Here is the relationship'))
+               h4('Summary of regional data'),
+               p('Here we plot frontier density by region (above) and the relationship between frontier density and segregation (opposite).'),
+               textOutput('frontier_summary'), offset = 1), # This is a reactive write up
+        column(6, plotlyOutput("scatter_plot"))
+      ),
+
+      
         
-      )
+      
+
       
     )
   }
@@ -128,7 +134,7 @@ method_panel <-
              fluidRow(
                column(width = 11, download_data(), offset = 1)
              )
-             
+
              )
   }
 

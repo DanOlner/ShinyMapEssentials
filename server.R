@@ -158,7 +158,6 @@ function(input, output, session) {
   output$frontier_summary <-
     renderText({
       paste(
-        'A plot of regions by frontier concentration is plotted opposite. ',
         reactive_values$most_frontier,
         ' has the largest concentration of social frontiers whilst ',
         reactive_values$least_frontier,
@@ -167,7 +166,8 @@ function(input, output, session) {
         reactive_values$most_segregated,
         ' (as measured by the dissimilarity index) whilst the least segregated area is ',
         reactive_values$least_segregated,
-        '. '
+        '. ',
+        'Generally we do not find any relationship between how segregated a region is and the density of social frontiers.'
       )
     })
   
@@ -589,17 +589,15 @@ function(input, output, session) {
   
   ## generate plots -----
   source('plot_widgets.R')
-  output$plot <-
+  output$scatter_plot <-
     renderPlotly({
       scatter_widget(data = ttwa)
     })
-
-  # Generate an HTML table view of the data ----
-  source('table_widget.R')
-  output$table <- DT::renderDataTable({
-    table_widget(
-      areas_no_geom
-      )
-  })
   
+  output$rank_plot <-
+    renderPlotly({
+      rank_plot_widget(data = ttwa)
+    })
+  
+
 }
