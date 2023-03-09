@@ -1,0 +1,3 @@
+#### Segregation and frontier density 
+
+Segregation refers to 'unevenness' in the spread of people living in an area by their country of birth or other characteristics. At a regional level, we measure frontier density: the proportion of boundaries in a regional that are potential social frontiers. A region with a high frontier density has a large number of sharp community borders. Whilst segregation and frontier density are related concepts, regions with high segregation do not necessarily have a high density of frontiers.

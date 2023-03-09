@@ -231,6 +231,13 @@ frontiers.proc <- lapply(frontiers, function(x) {
 
 st_crs(frontiers.proc[[1]])
 
+# bugfix: TTWA ranks not working properly ---------------------------------
+ttwa %>% filter(frontier_rank %in% 1:2)
+## 1st is called 1nd for some reason 
+ttwa <-
+  ttwa %>% 
+  mutate(frontier_rank_txt = frontier_rank_txt %>% gsub('1nd', '1st', x = .)) %>%
+  mutate(frontier_stat = frontier_stat %>% round(3))
 
 
 

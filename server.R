@@ -75,13 +75,7 @@ la <-
 
 ttwa <- ttwa %>% 
   mutate(
-    IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Dissimilarity_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    Other_index = sample.int(length(ttwa11nm), length(ttwa11nm)),
-    
-    frontier_stat = sample.int(length(ttwa11nm), length(ttwa11nm)), ## high = more
-#    frontier_rank = (frontier_stat * -1) %>% rank(ties.method = 'first') %>% toOrdinal(),
-#    di_rank = (di *-1) %>% rank(ties.method = 'first') %>% toOrdinal() ## low rank = hi segregation
+    IMD_rank = sample.int(length(ttwa11nm), length(ttwa11nm)) ## this is still needed for some reason
   )
 
 
@@ -96,6 +90,7 @@ areas_no_geom <-
   lsoa
 st_geometry(areas_no_geom) <- NULL
 
+ 
 
 ## Assign reactive value that will be used throughout
 reactive_values <- 
@@ -104,9 +99,10 @@ reactive_values <-
     most_segregated = (ttwa %>% filter(di_rank_txt == '1st'))$ttwa[1],
     least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
     most_frontier = (ttwa %>% filter(frontier_rank_txt == '1st'))$ttwa[1],
-    least_frontier = (ttwa %>% filter(frontier_stat == min(frontier_stat)))$ttwa[1]
+    least_frontier = (ttwa %>% arrange(frontier_stat))$ttwa[1]
     
   )
+
 
 
 # server.R ----------------------------------------------------------------
@@ -182,7 +178,6 @@ function(input, output, session) {
   output$frontier_summary <-
     renderText({
       paste(
-        'A plot of regions by frontier concentration is plotted opposite. ',
         reactive_values$most_frontier,
         ' has the largest concentration of social frontiers whilst ',
         reactive_values$least_frontier,
@@ -191,7 +186,8 @@ function(input, output, session) {
         reactive_values$most_segregated,
         ' (as measured by the dissimilarity index) whilst the least segregated area is ',
         reactive_values$least_segregated,
-        '. '
+        '. ',
+        'Generally we do not find any relationship between how segregated a region is and the density of social frontiers.'
       )
     })
   
@@ -572,17 +568,15 @@ function(input, output, session) {
   
   ## generate plots -----
   source('plot_widgets.R')
-  output$plot <-
+  output$scatter_plot <-
     renderPlotly({
-      scatter_widget(data = la)
+      scatter_widget(data = ttwa)
     })
   
-  # Generate an HTML table view of the data ----
-  source('table_widget.R')
-  output$table <- DT::renderDataTable({
-    table_widget(
-      areas_no_geom
-      )
-  })
+  output$rank_plot <-
+    renderPlotly({
+      rank_plot_widget(data = ttwa)
+    })
   
+
 }

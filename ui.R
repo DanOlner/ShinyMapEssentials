@@ -49,7 +49,7 @@ area_searcher_panel <-
 #    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
     selectizeInput("postcode_chosen", "Or input the first part of your postcode:",
                    choices = NULL, ## do this clientsize
-                   options=list(maxOptions=2)
+                   options=list(maxOptions = 5)
     )
   }
 
@@ -57,12 +57,16 @@ summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'Click the map or input your region',
+      label = 'To see statistics, hover over a map region or input your region below:',
       choices = area_options,
      selected = 'London',
       selectize = T
     )
   }
+
+# Panel layouts -----------------------------------------------------------
+
+
 
 about_tab_panel <- 
   function(title){
@@ -99,15 +103,24 @@ summary_panel <-
 #      fluidRow(width = 12, summary_input_panel()), 
       
       fluidRow(
-        column(width = 5, 
-               h4('Overall relationship between frontiers and segregation'),
-               p('Here is the relationship')),
-        column(width = 6, textOutput('frontier_summary'), offset = 1)
+        column(6, plotlyOutput("rank_plot")),
+        
+        column(5, offset = 1,
+          includeMarkdown("./assets/definitions.md")
+        )
       ),
       fluidRow(
-        column(5, plotlyOutput("plot")),
-        column(width = 6, verbatimTextOutput("relationship_summary"), offset = 1)
-      )
+        column(width = 5, 
+               h4('Summary of regional data'),
+               p('Here we plot frontier density by region (above) and the relationship between frontier density and segregation (opposite).'),
+               textOutput('frontier_summary'), offset = 1), # This is a reactive write up
+        column(6, plotlyOutput("scatter_plot"))
+      ),
+
+      
+        
+      
+
       
     )
   }
@@ -121,7 +134,7 @@ method_panel <-
              fluidRow(
                column(width = 11, download_data(), offset = 1)
              )
-             
+
              )
   }
 
@@ -173,7 +186,7 @@ fluidPage(
                              sidebarPanel(
                                h4(strong("Explore Frontiers")),
                                p(
-                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers'
+                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
                                ),
                                summary_input_panel(),
                                map_input_panel(),
