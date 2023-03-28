@@ -5,10 +5,10 @@ account: danolner
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8100384
-bundleId: 6932038
+bundleId: 6936048
 url: https://danolner.shinyapps.io/ShinyMapScale/
-when: 1678295580.22246
-lastSyncTime: 1678295580.22247
+when: 1678361740.62823
+lastSyncTime: 1678361740.62823
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: othercode/dataprep.R|othercode/randomDataChecks.R|cuttinz|local
