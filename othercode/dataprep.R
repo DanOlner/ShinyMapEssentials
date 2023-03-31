@@ -192,6 +192,32 @@ saveRDS(ttwa %>% filter(country %in% c('E','W','K')),'data/ttwa_engwales.rds')
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK FOR ANY CHANGES IN TTWA LSOA FILES FROM SOURCE----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lsoa_source <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/lsoa%20layer.rds'))
+ttwa_source <- readRDS(url('https://github.com/life-at-the-frontier/detect-uk-frontiers/raw/main/output/ttwa%202011%20layer.rds'))
+
+lsoa_local <- readRDS('data/lsoa.rds')
+ttwa_local <- readRDS('data/ttwa.rds')
+
+glimpse(lsoa_source)
+glimpse(lsoa_local)
+
+glimpse(ttwa_source)
+glimpse(ttwa_local)
+
+#Do cols match?
+table(names(ttwa_source)==names(ttwa_local))
+
+#Does whole thing match? Nope, not quite. Some updates in there.
+table(ttwa_source==ttwa_local)
+
+
+#LSOA cols won't match they were added to in the next section and saved locally.
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #LOAD LSOA TTWA DIRECTLY FROM FRONTIERS REPO, TWEAK LOOKUP SO MATCHES----
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

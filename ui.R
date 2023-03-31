@@ -1,25 +1,16 @@
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
-#Load data in UI so we can use the LA column names to set an option to select which to view on map
 
+#load TTWA level summary map data - we need here to get list of variable names to be able to choose from
 #RDS for these two is ~0.2 seconds vs ~10 seconds if loading from geojson directly
-
-#load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 ttwa <- readRDS('data/ttwa.rds')
 
-#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
-#SETTING TO TTWA FOR NOW (IN SERVER)
-
-
-#LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-# toplevel_colname_options <- names(la)[3:20]
-
-# fake data ---------------------------------------------------------------
+#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA
 
 toplevel_colname_options <-
-  c('IMD_rank',
-    'Dissimilarity_index',
-    'Other_index'
+  c('prop_foreign_born',
+    'frontier_rank',
+    'di_rank'
   )
 
 area_options <- 
@@ -39,7 +30,7 @@ map_input_panel <-
         inputId = 'toplevel_varname_to_display_on_map',
         label = 'top level geog variable to display on map',
         choices = toplevel_colname_options,
-        selected = 'IMD_rank',
+        selected = 'prop_foreign_born',
         selectize = T
         )
   }
