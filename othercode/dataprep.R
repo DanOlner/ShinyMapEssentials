@@ -236,7 +236,13 @@ lsoa$ttwa <- gsub(x = lsoa$ttwa, pattern = " (2011)", replacement = "", fixed = 
 table(ttwa$ttwa11nm %in% lsoa$ttwa)
 
 #Percent non UK born
-lsoa <- lsoa %>% mutate(UKborn_percent = (ukBorn/allResidents)*100)
+lsoa <- lsoa %>% mutate('UK born %' = (ukBorn/allResidents)*100)
+# lsoa <- lsoa %>% mutate(UKborn_percent| = (ukBorn/allResidents)*100)
+
+#Make ttwa variable with the same name to match
+ttwa <- ttwa %>% mutate('UK born %' = (1-prop_foreign_born)*100)
+
+
 
 #Frontiers are in list, each element a TTWA...
 #Frontiers not currently lon lat. Convert.
@@ -271,6 +277,12 @@ ttwa <-
 saveRDS(lsoa, 'data/lsoa.rds')
 saveRDS(ttwa, 'data/ttwa.rds')
 saveRDS(frontiers.proc, 'data/frontiers_list.rds')
+
+
+
+
+
+
 
 
 

@@ -38,7 +38,25 @@ cat('Time to filter frontiers list: ', proc.time() - x,'\n')
 #(Other style elements done in leaflet code below)
 #Top level palette needs doing reactively, as domain will change when variable changes
 #(Will be true of LSOA palette too if/when changing to more than one selectable variable)
-lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$UKborn_percent, na.color="transparent")
+# lsoapalette <- colorNumeric(palette="RdYlBu", domain=lsoa$`UK born %`, na.color="transparent")
+
+
+#Combined palette from matching variables across LSOA and TTWA data
+#(This will need reactive-ising if/when vars are changeable)
+both <- ttwa %>% 
+  st_set_geometry(NULL) %>% 
+  select(`UK born %`) %>% 
+  mutate(source = 'ttwa') %>% 
+  rbind(
+    lsoa %>% 
+      st_set_geometry(NULL) %>% 
+      select(`UK born %`) %>% 
+      mutate(source = 'lsoa')
+  )
+
+# palette <- colorBin(palette = "RdYlBu", domain = both$`UK born %`, bins = 7, pretty = T, na.color="transparent")
+palette <- colorNumeric(palette = "RdYlBu", domain = both$`UK born %`, na.color="transparent")
+
 
 #This fixes st_intersection not working
 #Without it, we get the error described here
@@ -218,14 +236,15 @@ function(input, output, session) {
   
     if(clearall){
       leafletProxy("map") %>%
-        clearShapes()    
+        clearShapes() %>% 
+        clearControls()
     } else {
-      leafletProxy("map") %>% clearGroup("top level geography")
+      leafletProxy("map") %>% clearGroup("top level geography") %>% clearControls()
     }
     
     
   #Set scope higher so drawttwas function can use without passing
-  ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+  # ttwa_palette <<- colorNumeric(palette="RdYlBu", domain=mapdata$displaycolumn, na.color="transparent")
     
   #Add TTWAs, if needed remove one TTWA if zoomed in to leave space for LSOAS/frontiers for selected TTWA
   #(That's done on function input, in drawLSOAs)
@@ -234,14 +253,19 @@ function(input, output, session) {
       data = mapdata,
       layerId = ~ttwa11nm,
       label = ~ttwa11nm,
-      fillColor = ~ttwa_palette(displaycolumn),
+      fillColor = ~palette(displaycolumn),
+      # fillColor = ~ttwa_palette(displaycolumn),
       color = 'grey',
       weight = 3,
       opacity = 0.7,
       fillOpacity = 0.5,
       group = "top level geography",
       highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = FALSE)
-    ) 
+    ) %>% addLegend("topright", pal = palette, values = both$`UK born %`,
+                    title = "UK born %",
+                    opacity = 1)
+  #Note this issue, hence not using formula syntax in legend
+  #https://community.rstudio.com/t/no-applicable-method-for-metadata-applied-to-an-object-of-class-null-with-leaflet-map/47720
     
   }
   
@@ -266,7 +290,7 @@ function(input, output, session) {
     mapdata <- mapdata %>% filter(ttwa11nm!=isolate(input$area_chosen))
     
     #Set scope higher so drawttwas function can use without passing
-    ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+    # ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
     
     drawttwas(mapdata, clearall = F)
     
@@ -278,7 +302,7 @@ function(input, output, session) {
     leafletProxy('map') %>%
       addPolygons(
         data = lsoa %>% filter(ttwa==isolate(input$area_chosen)),
-        fillColor = ~lsoapalette(UKborn_percent),
+        fillColor = ~palette(`UK born %`),
         color = 'black',
         weight = 0.2,
         opacity = 1,
@@ -366,7 +390,7 @@ function(input, output, session) {
     #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
     
     #Set scope higher so drawttwas function can use without passing
-    ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+    # ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
     
     drawLSOAs(mapdata)
     

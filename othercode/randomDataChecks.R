@@ -216,3 +216,25 @@ plot(st_geometry(ttwa.s))
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK RANGE OF MATCHING VARS IN TTWA AND LSOA (FOR MAKING SURE JOINT SCALE BAR WILL WORK OK)----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ttwa <- readRDS('data/ttwa.rds')
+lsoa <- readRDS('data/lsoa.rds')
+
+both <- ttwa %>% 
+  st_set_geometry(NULL) %>% 
+  select(`UK born %`) %>% 
+  mutate(source = 'ttwa') %>% 
+  rbind(
+    lsoa %>% 
+      st_set_geometry(NULL) %>% 
+      select(`UK born %`) %>% 
+      mutate(source = 'lsoa')
+  )
+
+#Same scale should work fine? Make combo of both and use that, to make sure all values used...
+ggplot(both, aes(x = `UK born %`, colour = source)) +
+  geom_density()
+

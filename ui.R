@@ -8,7 +8,7 @@ ttwa <- readRDS('data/ttwa.rds')
 #UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA
 
 toplevel_colname_options <-
-  c('prop_foreign_born',
+  c('UK born %',
     'frontier_rank',
     'di_rank'
   )
@@ -28,9 +28,10 @@ map_input_panel <-
   function(){
      selectInput(
         inputId = 'toplevel_varname_to_display_on_map',
-        label = 'top level geog variable to display on map',
+        label = 'Variable to display in map colours',
         choices = toplevel_colname_options,
-        selected = 'prop_foreign_born',
+        selected = 'UK born %',
+        # selected = 'prop_foreign_born',
         selectize = T
         )
   }
@@ -38,7 +39,7 @@ map_input_panel <-
 area_searcher_panel <-
   function(){
 #    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
-    selectizeInput("postcode_chosen", "Or input the first part of your postcode:",
+    selectizeInput("postcode_chosen", "Or input the first part of a postcode:",
                    choices = NULL, ## do this clientsize
                    options=list(maxOptions = 5)
     )
@@ -48,7 +49,7 @@ summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'To see statistics, hover over a map region or input your region below:',
+      label = 'To choose a region to view, click on the map or input its name below:',
       choices = area_options,
      selected = 'London',
       selectize = T
@@ -177,11 +178,14 @@ fluidPage(
                              sidebarPanel(
                                h4(strong("Explore Frontiers")),
                                p(
-                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
+                                 'Drag the map and zoom in to see the location of frontiers.'
                                ),
+                               # p(
+                               #   'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
+                               # ),
                                summary_input_panel(),
-                               map_input_panel(),
                                area_searcher_panel(),
+                               map_input_panel(),
                                plotlyOutput("3Dmap"),
                                textOutput('ttwa_writeup')
 
