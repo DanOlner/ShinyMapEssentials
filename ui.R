@@ -7,11 +7,15 @@ ttwa <- readRDS('data/ttwa.rds')
 
 #UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA
 
+# toplevel_colname_options <-
+#   c('UK born %',
+#     'frontier_rank',
+#     'di_rank'
+#   )
+
+#Setting to single var for now
 toplevel_colname_options <-
-  c('UK born %',
-    'frontier_rank',
-    'di_rank'
-  )
+  c('UK born %')
 
 area_options <- 
   c('', ttwa$ttwa11nm %>% unique)
@@ -28,11 +32,12 @@ map_input_panel <-
   function(){
      selectInput(
         inputId = 'toplevel_varname_to_display_on_map',
-        label = 'Variable to display in map colours',
+        label = 'Variable to display on map',
         choices = toplevel_colname_options,
         selected = 'UK born %',
         # selected = 'prop_foreign_born',
-        selectize = T
+        selectize = T,
+        
         )
   }
 
@@ -186,7 +191,7 @@ fluidPage(
                                summary_input_panel(),
                                area_searcher_panel(),
                                map_input_panel(),
-                               plotlyOutput("3Dmap"),
+                               # plotlyOutput("3Dmap"),
                                textOutput('ttwa_writeup')
 
                                ),

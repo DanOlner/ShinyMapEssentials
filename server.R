@@ -9,6 +9,7 @@ if(is_inst("reactlog")){
   options(shiny.reactlog = TRUE)
 }
 
+
 # inputs ------------------------------------------------------------------
 
 
@@ -89,6 +90,12 @@ reactive_values <-
 # server.R ----------------------------------------------------------------
 
 function(input, output, session) {
+  
+  # deactivate data select input for time being ------
+  
+  #https://stackoverflow.com/a/55161883
+  #Doesn't work - just removing element in UI for now
+  # shinyjs::disable("toplevel_varname_to_display_on_map")
   
   
   ## reactive to update area chosen 
@@ -255,10 +262,10 @@ function(input, output, session) {
       label = ~ttwa11nm,
       fillColor = ~palette(displaycolumn),
       # fillColor = ~ttwa_palette(displaycolumn),
-      color = 'grey',
+      color = 'darkslategrey',
       weight = 3,
-      opacity = 0.7,
-      fillOpacity = 0.5,
+      opacity = 1,
+      fillOpacity = 0,
       group = "top level geography",
       highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = FALSE)
     ) %>% addLegend("topright", pal = palette, values = both$`UK born %`,
@@ -320,7 +327,7 @@ function(input, output, session) {
         data = ttwa %>% filter(ttwa11nm == isolate(input$area_chosen)),
         fill = F,
         color = 'white',
-        weight = 8,
+        weight = 10,
         opacity = 1,
         group = "ttwa_outline"
       )
