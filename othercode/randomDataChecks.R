@@ -238,3 +238,80 @@ both <- ttwa %>%
 ggplot(both, aes(x = `UK born %`, colour = source)) +
   geom_density()
 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK PLOTLY FOR 3D MAP DATA PLOT BEFORE PUTTING INTO SHINY----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+library(plotly)
+# library(terra)
+library(sf)
+# library(fasterize)
+
+#Both fasterize and raster are crashing R
+
+#Example
+# data(volcano)
+
+#This is a small number of points. How would it do with many? Probably not well if e.g. London
+# fig <- plot_ly(z = ~volcano)
+# fig <- fig %>% add_surface()
+# fig
+
+#Let's test
+lsoa <- readRDS('data/lsoa.rds')
+lsoa <- st_transform(lsoa, crs = 'EPSG:27700')
+
+lsoa <- lsoa %>% 
+  mutate(`non UK born %` = (100-`UK born %`)*3)
+ttwa <- lsoa %>% filter(ttwa == "London")
+
+#https://rdrr.io/github/rspatial/terra/man/rasterize.html
+#r <- rast(xmin=0, ncols=80, nrows=80)
+
+#https://r-spatial.github.io/stars/reference/st_rasterize.html
+# ttwa.rast <- stars::st_rasterize(ttwa["non UK born %"])
+ttwa.rast <- stars::st_rasterize(ttwa["non UK born %"], stars::st_as_stars(st_bbox(ttwa), nx = 800, ny = 800, values = NA_real_))
+
+#Ah OK, NAs are grid areas with no data, obvs.
+
+#Already contains as matrix:
+class(ttwa.rast$`UK born %`)
+
+#So, straight into 3D plotly?
+#https://stackoverflow.com/a/69824830
+fig <- plot_ly(z = ~ttwa.rast$`non UK born %`)
+fig <- fig %>% add_surface() %>%
+  layout(scene=list(aspectmode='data',
+         xaxis = list(title = '', showgrid = F, showline = F, zeroline = F, showticklabels = FALSE),
+         yaxis = list(title = '', showgrid = F, showline = F, zeroline = F, showticklabels = FALSE),
+         zaxis = list(title = '', showgrid = F, showline = F, zeroline = F, showticklabels = FALSE))
+         ) %>% 
+  hide_colorbar()
+
+#Attempt to add frontiers over the top
+#(Would need to be raised to height of appropriate LSOA z axis)
+#We have zone IDs - would want to pick whichever was highest
+frontiers <- readRDS('data/frontiers_list.rds')
+ttwa.frontiers <- frontiers[['London']]
+
+
+
+
+x <- proc.time()
+fig
+proc.time() - x
+
+
+
+
+
+
+
+
+
+
+
+
+

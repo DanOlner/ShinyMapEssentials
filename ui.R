@@ -54,7 +54,7 @@ summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'To choose a region to view, click on the map or input its name below:',
+      label = 'To choose a region to view, click on a different region on the map or input its name below:',
       choices = area_options,
      selected = 'London',
       selectize = T
