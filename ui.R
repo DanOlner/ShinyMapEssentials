@@ -1,26 +1,21 @@
 #Based on https://shiny.rstudio.com/articles/tabsets.html
 
-#Load data in UI so we can use the LA column names to set an option to select which to view on map
 
+#load TTWA level summary map data - we need here to get list of variable names to be able to choose from
 #RDS for these two is ~0.2 seconds vs ~10 seconds if loading from geojson directly
-
-#load local authority level summary map data - we need here to get list of LA variable names to be able to choose from
 ttwa <- readRDS('data/ttwa.rds')
 
-#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA, SWAP BETWEEN LA AND TTWA
-#SETTING TO TTWA FOR NOW (IN SERVER)
+#UI WILL HAVE WIDGET TO SELECT TYPE OF TOP LEVEL DATA
 
+# toplevel_colname_options <-
+#   c('UK born %',
+#     'frontier_rank',
+#     'di_rank'
+#   )
 
-#LA column names to be able to choose from (can later add lookups for better names, explanations etc)
-# toplevel_colname_options <- names(la)[3:20]
-
-# fake data ---------------------------------------------------------------
-
+#Setting to single var for now
 toplevel_colname_options <-
-  c('IMD_rank',
-    'Dissimilarity_index',
-    'Other_index'
-  )
+  c('UK born %')
 
 area_options <- 
   c('', ttwa$ttwa11nm %>% unique)
@@ -33,21 +28,23 @@ download_data <-
   }
 
 
-map_input_panel <-
-  function(){
-     selectInput(
-        inputId = 'toplevel_varname_to_display_on_map',
-        label = 'top level geog variable to display on map',
-        choices = toplevel_colname_options,
-        selected = 'IMD_rank',
-        selectize = T
-        )
-  }
+# map_input_panel <-
+#   function(){
+#      selectInput(
+#         inputId = 'toplevel_varname_to_display_on_map',
+#         label = 'Variable to display on map',
+#         choices = toplevel_colname_options,
+#         selected = 'UK born %',
+#         # selected = 'prop_foreign_born',
+#         selectize = T,
+#         
+#         )
+#   }
 
 area_searcher_panel <-
   function(){
 #    textInput("password_input", label=h4(":pass"),value = "", width = "50%")
-    selectizeInput("postcode_chosen", "Or input the first part of your postcode:",
+    selectizeInput("postcode_chosen", "Input first part of a postcode to see its containing region:",
                    choices = NULL, ## do this clientsize
                    options=list(maxOptions = 5)
     )
@@ -57,11 +54,29 @@ summary_input_panel <-
   function(){
     selectInput(
       inputId = 'area_chosen',
-      label = 'To see statistics, hover over a map region or input your region below:',
+      label = 'To choose a region to view, click on a different region on the map or input its name below:',
       choices = area_options,
      selected = 'London',
       selectize = T
     )
+  }
+
+
+census_select_panel <-
+  function(){
+     selectInput(
+        inputId = 'census_select',
+        label = 'Select which Census to display: 2011, 2021 or the difference between them',
+        choices = c('2011','2021','both'),
+        selected = '2021',
+        selectize = T
+        )
+  }
+
+
+toggleSwitch <- 
+  function(){
+    materialSwitch(inputId = "switch1", label = HTML("<b>Toggle map: one or two colours</b>"))
   }
 
 # Panel layouts -----------------------------------------------------------
@@ -186,12 +201,17 @@ fluidPage(
                              sidebarPanel(
                                h4(strong("Explore Frontiers")),
                                p(
-                                 'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
+                                 'Drag the map and zoom in to see the location of frontiers.'
                                ),
+                               # p(
+                               #   'Colours represent wider areas with high numbers of frontiers. Drag the map and zoom in to see the location of frontiers.'
+                               # ),
                                summary_input_panel(),
-                               map_input_panel(),
                                area_searcher_panel(),
-                               plotlyOutput("3Dmap"),
+                               # map_input_panel(),
+                               census_select_panel(),
+                               toggleSwitch(),
+                               # plotlyOutput("3Dmap"),
                                textOutput('ttwa_writeup')
 
                                ),
