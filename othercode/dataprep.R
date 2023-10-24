@@ -248,12 +248,14 @@ ttwa <- ttwa %>% mutate('UK born %' = (1-prop_foreign_born)*100)
 #Frontiers not currently lon lat. Convert.
 
 #Also, simplify to see if speed can be increased
+#Or actually, don't simplify too much, see if it runs OK
+#(Otherwise doesn't match LSOA borders)
 
 frontiers.proc <- lapply(frontiers, function(x) {
   
   if(!is.null(x)) {
     
-    x <- st_simplify(x, dTolerance = 1000, preserveTopology = F)
+    # x <- st_simplify(x, dTolerance = 1000, preserveTopology = F)
     x <- st_transform(x, "EPSG:4326")
     
   }
@@ -262,6 +264,22 @@ frontiers.proc <- lapply(frontiers, function(x) {
 })
 
 st_crs(frontiers.proc[[1]])
+
+#REPEAT FOR 2021 FRONTIERS, TESTING WITHOUT SIMPLIFY FOR NOW
+frontiers.proc2 <- lapply(readRDS('data/frontiers_list_2021.rds'), function(x) {
+  
+  if(!is.null(x)) {
+    
+    # x <- st_simplify(x, dTolerance = 1000, preserveTopology = F)
+    x <- st_transform(x, "EPSG:4326")
+    
+  }
+  
+  
+})
+
+st_crs(frontiers.proc2[[1]])
+
 
 # bugfix: TTWA ranks not working properly ---------------------------------
 ttwa %>% filter(frontier_rank %in% 1:2)
@@ -276,7 +294,8 @@ ttwa <-
 #Save for shiny app
 saveRDS(lsoa, 'data/lsoa.rds')
 saveRDS(ttwa, 'data/ttwa.rds')
-saveRDS(frontiers.proc, 'data/frontiers_list.rds')
+saveRDS(frontiers.proc, 'data/frontiers_list_2011.rds')
+saveRDS(frontiers.proc2, 'data/frontiers_list_2021.rds')
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,17 +14,28 @@ if(is_inst("reactlog")){
 
 
 # #Based on https://shiny.rstudio.com/articles/tabsets.html
-lsoa <- readRDS('data/lsoa.rds')
+lsoa11 <- readRDS('data/lsoa2011.rds')
 
 #add column for displaying UK born % on hover
-lsoa <- lsoa %>% 
+lsoa11 <- lsoa11 %>% 
   mutate(UKbornperc_display = round(`UK born %`,0) %>% as.character() %>% paste0("%"))
+
+#Adjustments to structure to make identical to lsoa11
+lsoa21 <- readRDS('data/lsoa2021.rds') %>% 
+  select(-ttwa11cd,-zoneType) %>% 
+  rename(ttwa = ttwa11nm)
+
+#add column for displaying UK born % on hover
+lsoa21 <- lsoa21 %>% 
+  mutate(UKbornperc_display = round(`UK born %`,0) %>% as.character() %>% paste0("%"))
+
 
 ttwa <- readRDS('data/ttwa.rds')
 
 
 #FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
-frontiers.original.list <- readRDS('data/frontiers_list.rds')
+frontiers.original.list.2011 <- readRDS('data/frontiers_list_2011.rds')
+frontiers.original.list.2021 <- readRDS('data/frontiers_list_2021.rds')
 
 ## postcode lookup 
 postcode_lookup <- readRDS('data/postcode lookup table.rds')
@@ -34,9 +45,17 @@ postcode_options <- postcode_lookup$pcd_area
 #Filter phi, keep values above cutoff (in function so can be set by user)
 #Function loaded in global.R
 x <- proc.time()
-frontiers.live.list <- filter.frontiers.by.phi(frontiers.original.list, 1.96)
-cat('Time to filter frontiers list: ', proc.time() - x,'\n')
+frontiers.live.list.2011 <- filter.frontiers.by.phi(frontiers.original.list.2011, 1.96)
+cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
 
+x <- proc.time()
+frontiers.live.list.2021 <- filter.frontiers.by.phi(frontiers.original.list.2021, 1.96)
+cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
+
+
+#SET THE LSOA / FRONTIERS TO BE DISPLAYED, OVERWRITE TO CHANGE
+# lsoa <- lsoa21
+# frontiers.live.list <- frontiers.live.list.2021
 
 #Palettes for LSOAs and top level geographies
 #(Other style elements done in leaflet code below)
@@ -82,8 +101,9 @@ reactive_values <-
     most_segregated = (ttwa %>% filter(di_rank_txt == '1st'))$ttwa[1],
     least_segregated = (ttwa %>% filter(di == min(di)))$ttwa[1],
     most_frontier = (ttwa %>% filter(frontier_rank_txt == '1st'))$ttwa[1],
-    least_frontier = (ttwa %>% arrange(frontier_stat))$ttwa[1]
-    
+    least_frontier = (ttwa %>% arrange(frontier_stat))$ttwa[1],
+    lsoa = lsoa21,
+    frontiers.live.list = frontiers.live.list.2021
   )
 
 
@@ -92,10 +112,11 @@ reactive_values <-
 
 function(input, output, session) {
   
-  #Palette change switch
+  #Palette change switch (is doing the initial loading, other inits turned off with ignoreInit = T)
   observeEvent(input$switch1, {
     
-    print(input$switch1)
+    cat("Input switch for map colour triggered. ")
+    cat(input$switch1,"\n")
     
     if(input$switch1 == TRUE) {color_selected = "RdYlBu"}
     if(input$switch1 == FALSE) {color_selected = "Blues"}
@@ -161,6 +182,32 @@ function(input, output, session) {
     #We don't want postcode input triggering initially; text input$area_chosen is being the central TTWA store, we don't want to overwrite with NULL  
   }, ignoreInit = T#https://stackoverflow.com/questions/42165567/prevent-execution-of-observe-on-app-load-in-shiny
   )
+  
+  
+  
+  
+  observeEvent(input$census_select,{
+    
+    if(isolate(input$census_select=='2011')){
+      
+      print("2011")
+      
+      reactive_values$lsoa <- lsoa11
+      reactive_values$frontiers.live.list <- frontiers.live.list.2011
+      
+    } else if (isolate(input$census_select=='2021')){
+      
+      print("2021")
+     
+      reactive_values$lsoa <- lsoa21
+      reactive_values$frontiers.live.list <- frontiers.live.list.2021
+       
+    }
+    
+  }, ignoreInit = T
+  )
+  
+  
   
   
   ## Serverside postcode select 
@@ -328,7 +375,7 @@ function(input, output, session) {
     # 
     leafletProxy('map') %>%
       addPolygons(
-        data = lsoa %>% filter(ttwa==isolate(input$area_chosen)),
+        data = reactive_values$lsoa %>% filter(ttwa==isolate(input$area_chosen)),
         label = ~UKbornperc_display,
         fillColor = ~palette(`UK born %`),
         color = 'black',
@@ -338,7 +385,7 @@ function(input, output, session) {
         group = "lsoas"
       ) %>%
       addPolylines(
-        data = frontiers.live.list[[isolate(input$area_chosen)]],
+        data = reactive_values$frontiers.live.list[[isolate(input$area_chosen)]],
         color = 'black',
         weight = 3,
         opacity = 1,

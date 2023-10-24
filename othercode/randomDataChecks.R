@@ -2,7 +2,6 @@
 library(tidyverse)
 library(sf)
 library(tmap)
-library(rgeos)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
 #CHECKING FILE CONTENTS----
@@ -789,15 +788,60 @@ st_write(f21.df, 'local/qgis/frontiers2021.shp')
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK LSOA 2011 / 2021 FILES, FRONTIER FILES, MAKE SAME STRUCTURE----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#What CRSs are they too?
+
+l11 <- readRDS('data/lsoa2011.rds')
+l21 <- readRDS('local/lsoa2021_aggd_to_2011_geog_via_OA_COBdata2021_readyforfrontiercalcs.rds')
+
+frontiers.original.list.2011 <- readRDS('data/frontiers_list_2011.rds')
+frontiers.original.list.2021 <- readRDS('data/frontiers_list_2021.rds')
+
+st_crs(l11)
+st_crs(l21)
+
+st_crs(frontiers.original.list.2011[[1]])
+st_crs(frontiers.original.list.2021[[2]])
+
+#So, LSOA needs updating and rewriting to EPSG:4326
+#That took longer than usual!
+l21 <- l21 %>% st_transform(crs = 'EPSG:4326')
+
+saveRDS(l21, 'data/lsoa2021.rds')
+
+
+#CHECK PACKAGE DEPENDENCIES, LOOKING FOR RGEOS
+avail_pks <- available.packages()
+
+deps <- tools::package_dependencies(packages = avail_pks[c('shiny',
+                                                           'tidyverse',
+                                                           'sf',
+                                                           'leaflet',
+                                                           'plotly',
+                                                           'bslib',
+                                                           'knitr',
+                                                           'toOrdinal',
+                                                           'shinyWidgets',
+                                                           'DT'), "Package"],
+                                    recursive = TRUE)
+
+deps <- unlist(deps)
+table(deps=='rgeos')
 
 
 
 
-
-
-
-
-
-
+install.packages(c('shiny',
+                   'tidyverse',
+                   'sf',
+                   'leaflet',
+                   'plotly',
+                   'bslib',
+                   'knitr',
+                   'toOrdinal',
+                   'shinyWidgets'))
 
 
