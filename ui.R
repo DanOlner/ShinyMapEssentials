@@ -66,8 +66,8 @@ census_select_panel <-
   function(){
      selectInput(
         inputId = 'census_select',
-        label = 'Select which Census to display: 2011, 2021 or the difference between them',
-        choices = c('2011','2021','both'),
+        label = 'Select which Census to display: 2011, 2021 or the percentage-point difference between them (with 2021 frontiers shown)',
+        choices = c('2011','2021','difference'),
         selected = '2021',
         selectize = T
         )
@@ -76,7 +76,7 @@ census_select_panel <-
 
 toggleSwitch <- 
   function(){
-    materialSwitch(inputId = "switch1", label = HTML("<b>Toggle map: one or two colours</b>"))
+    materialSwitch(inputId = "switch1", label = HTML("<b>Toggle map: one or two colours (defaults to two if viewing Census difference)</b>"))
   }
 
 # Panel layouts -----------------------------------------------------------

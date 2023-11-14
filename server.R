@@ -29,6 +29,18 @@ lsoa21 <- readRDS('data/lsoa2021.rds') %>%
 lsoa21 <- lsoa21 %>% 
   mutate(UKbornperc_display = round(`UK born %`,0) %>% as.character() %>% paste0("%"))
 
+#Percentage point difference between the two Censuses
+lsoa.diff <- left_join(
+  lsoa11 %>% select(zoneID, zoneNm,ttwa,UKborn_percent11 = `UK born %`, UKbornperc_display11 = UKbornperc_display),
+  lsoa21 %>% select(zoneID, UKborn_percent21 = `UK born %`, UKbornperc_display21 = UKbornperc_display) %>% st_set_geometry(NULL),
+  by = 'zoneID'
+) %>% 
+  mutate(
+    `UK born %` = UKborn_percent21 - UKborn_percent11,#not correct variable name, but keeping same for ease of plotting below
+    UKbornperc_display = paste0("ppt diff: ",round(`UK born %`,2),"%. 2011: ",round(UKborn_percent11,2),", 2021: ",round(UKborn_percent21,2),"%")
+  ) %>% 
+  select(-c(UKborn_percent11:UKbornperc_display21))
+
 
 ttwa <- readRDS('data/ttwa.rds')
 
@@ -66,18 +78,26 @@ cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
 
 #Combined palette from matching variables across LSOA and TTWA data
 #(This will need reactive-ising if/when vars are changeable)
-both <- ttwa %>% 
-  st_set_geometry(NULL) %>% 
-  select(`UK born %`) %>% 
-  mutate(source = 'ttwa') %>% 
-  rbind(
-    lsoa %>% 
-      st_set_geometry(NULL) %>% 
-      select(`UK born %`) %>% 
-      mutate(source = 'lsoa')
-  )
+# both <- ttwa %>%
+#   st_set_geometry(NULL) %>%
+#   select(`UK born %`) %>%
+#   mutate(source = 'ttwa') %>%
+#   rbind(
+#     lsoa11 %>%
+#       st_set_geometry(NULL) %>%
+#       select(`UK born %`) %>%
+#       mutate(source = 'lsoa')
+#   ) %>% 
+#   rbind(
+#     lsoa21 %>%
+#       st_set_geometry(NULL) %>%
+#       select(`UK born %`) %>%
+#       mutate(source = 'lsoa')
+#   )
 
-palette <- colorNumeric(palette = "Blues", reverse = F, domain = both$`UK born %`, na.color="transparent")
+#Begins with 2021 LSOAs, set in reactive_values just below
+color_selected = "Blues"
+palette <- colorNumeric(palette = color_selected, reverse = F, domain = lsoa21$`UK born %`, na.color="transparent")
 
 #This fixes st_intersection not working
 #Without it, we get the error described here
@@ -87,9 +107,9 @@ sf::sf_use_s2(FALSE)
 
 # no geom la --------------------------------------------------------------
 
-areas_no_geom <-
-  lsoa
-st_geometry(areas_no_geom) <- NULL
+# areas_no_geom <-
+#   lsoa
+# st_geometry(areas_no_geom) <- NULL
 
  
 
@@ -118,23 +138,31 @@ function(input, output, session) {
     cat("Input switch for map colour triggered. ")
     cat(input$switch1,"\n")
     
-    if(input$switch1 == TRUE) {color_selected = "RdYlBu"}
-    if(input$switch1 == FALSE) {color_selected = "Blues"}
+    #don't change if looking at difference, keep to diverging palette
+    if (isolate(input$census_select!='difference')){
     
-    palette <<- colorNumeric(palette = color_selected, domain = both$`UK born %`, na.color="transparent")
+      if(input$switch1 == TRUE) {color_selected <<- "RdYlBu"}
+      if(input$switch1 == FALSE) {color_selected <<- "Blues"}
+      
+      # palette <<- colorNumeric(palette = color_selected, domain = both$`UK born %`, na.color="transparent")
+      
+      # x <- isolate(reactive_values$lsoa)
+      palette <<- colorNumeric(palette = color_selected, domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+      
+      # updateSelectInput(session, inputId = "area_chosen", selected = 'London')
+      
+      mapdata <- map_df()
+      
+      #Reactively change palette if change of top level variable
+      #https://rstudio.github.io/leaflet/choropleths.html
+      #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
+      
+      #Set scope higher so drawttwas function can use without passing
+      # ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
+      
+      drawLSOAs(mapdata)
     
-    # updateSelectInput(session, inputId = "area_chosen", selected = 'London')
-    
-    mapdata <- map_df()
-    
-    #Reactively change palette if change of top level variable
-    #https://rstudio.github.io/leaflet/choropleths.html
-    #https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
-    
-    #Set scope higher so drawttwas function can use without passing
-    # ttwa_palette <<- colorNumeric(palette="YlOrRd", domain=mapdata$displaycolumn, na.color="transparent")
-    
-    drawLSOAs(mapdata)
+    }
     
   })
   
@@ -195,12 +223,26 @@ function(input, output, session) {
       reactive_values$lsoa <- lsoa11
       reactive_values$frontiers.live.list <- frontiers.live.list.2011
       
+      palette <<- colorNumeric(palette = color_selected, domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+      
     } else if (isolate(input$census_select=='2021')){
       
       print("2021")
      
       reactive_values$lsoa <- lsoa21
       reactive_values$frontiers.live.list <- frontiers.live.list.2021
+      
+      palette <<- colorNumeric(palette = color_selected, domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+       
+    } else if (isolate(input$census_select=='difference')){
+      
+      print("difference")
+     
+      reactive_values$lsoa <- lsoa.diff
+      reactive_values$frontiers.live.list <- frontiers.live.list.2021
+      
+      # palette <<- colorNumeric(palette = "BrBG", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+      palette <<- colorNumeric(palette = "RdYlBu", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
        
     }
     
@@ -326,7 +368,7 @@ function(input, output, session) {
       data = mapdata,
       layerId = ~ttwa11nm,
       label = ~ttwa11nm,
-      fillColor = ~palette(displaycolumn),
+      # fillColor = ~palette(displaycolumn),
       # fillColor = ~ttwa_palette(displaycolumn),
       color = 'darkslategrey',
       weight = 3,
@@ -334,13 +376,7 @@ function(input, output, session) {
       fillOpacity = 0,
       group = "top level geography",
       highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = FALSE)
-    ) %>% addLegend("topright", pal = palette, values = both$`UK born %`,
-                    title = "UK born %",
-                    opacity = 1) %>%
-    addScaleBar("topleft")
-  #Note this issue, hence not using formula syntax in legend
-  #https://community.rstudio.com/t/no-applicable-method-for-metadata-applied-to-an-object-of-class-null-with-leaflet-map/47720
-    
+    ) 
   }
   
   #Draw LSOAS on leaflet for currently selected TTWA
@@ -398,7 +434,13 @@ function(input, output, session) {
         weight = 10,
         opacity = 1,
         group = "ttwa_outline"
-      )
+      ) %>% addLegend("topright", pal = palette, values = reactive_values$lsoa$`UK born %`,
+                     title = "UK born %",
+                     opacity = 1) %>%
+      addScaleBar("topleft")
+    #Note this issue, hence not using formula syntax in legend
+    #https://community.rstudio.com/t/no-applicable-method-for-metadata-applied-to-an-object-of-class-null-with-leaflet-map/47720
+    
     
     
     #Centre on TTWA in focus

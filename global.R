@@ -7,6 +7,7 @@ library(bslib)
 library(knitr)
 library(toOrdinal)
 library(shinyWidgets)
+library(markdown)
 
 source('small_functions.R')
 

@@ -830,6 +830,7 @@ deps <- tools::package_dependencies(packages = avail_pks[c('shiny',
 
 deps <- unlist(deps)
 table(deps=='rgeos')
+table(deps=='markdown')
 
 
 
