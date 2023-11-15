@@ -122,6 +122,8 @@ divergingcolours <- "BrBG"
 color_selected = "Blues"
 palette <- colorNumeric(palette = color_selected, reverse = F, domain = lsoa21$`UK born %`, na.color="transparent")
 
+
+
 #This fixes st_intersection not working
 #Without it, we get the error described here
 #(Only need to set once but keeping here for now for clarity)
@@ -262,7 +264,7 @@ function(input, output, session) {
       print("difference")
      
       reactive_values$lsoa <- lsoa.diff
-      reactive_values$frontiers.live.list <- frontiers.live.list.2021
+      reactive_values$frontiers.live.list <- frontiers.live.list.both
       
       palette <<- colorNumeric(palette = divergingcolours, domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
       # palette <<- colorNumeric(palette = "RdYlBu", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
@@ -432,6 +434,43 @@ function(input, output, session) {
     # x <- frontiers.live.list[[reactive_values$area_chosen]]
     # print(x)
     # 
+    # leafletProxy('map') %>%
+    #   addPolygons(
+    #     data = reactive_values$lsoa %>% filter(ttwa==isolate(input$area_chosen)),
+    #     label = ~UKbornperc_display,
+    #     fillColor = ~palette(`UK born %`),
+    #     color = 'black',
+    #     weight = 0.2,
+    #     opacity = 1,
+    #     fillOpacity = 0.7,
+    #     group = "lsoas"
+    #   ) %>%
+    #   addPolylines(
+    #     data = reactive_values$frontiers.live.list[[isolate(input$area_chosen)]],
+    #     color = 'black',
+    #     weight = 3,
+    #     opacity = 1,
+    #     group = "frontiers"
+    #   ) %>%
+    #   addPolygons(
+    #     data = ttwa %>% filter(ttwa11nm == isolate(input$area_chosen)),
+    #     fill = F,
+    #     color = 'white',
+    #     weight = 10,
+    #     opacity = 1,
+    #     group = "ttwa_outline"
+    #   ) %>% addLegend("topright", pal = palette, values = reactive_values$lsoa$`UK born %`,
+    #                  title = "UK born %",
+    #                  opacity = 1) %>%
+    #   addScaleBar("topleft")
+    #Note this issue, hence not using formula syntax in legend
+    #https://community.rstudio.com/t/no-applicable-method-for-metadata-applied-to-an-object-of-class-null-with-leaflet-map/47720
+    
+    
+    
+    
+    
+    #Add LSOAs
     leafletProxy('map') %>%
       addPolygons(
         data = reactive_values$lsoa %>% filter(ttwa==isolate(input$area_chosen)),
@@ -442,14 +481,46 @@ function(input, output, session) {
         opacity = 1,
         fillOpacity = 0.7,
         group = "lsoas"
-      ) %>%
+      )
+    
+    
+    #Change behaviour depending on whether displaying a single year's frontiers or both year's
+    if(isolate(input$census_select=='difference')){
+      
+    #If displaying frontiers from both years
+    #Separate colours for frontiers in both vs 2011/2021
+    # frontierpalette <- colorFactor(c('black','red','green'), domain = factor(reactive_values$frontiers.live.list[[isolate(input$area_chosen)]]$year))
+    frontierpalette <- colorFactor(c('#FF6B6B','#49be25','black'), domain = factor(reactive_values$frontiers.live.list[[isolate(input$area_chosen)]]$year))
+    # frontierpalette <- colorFactor(c('#FF6B6B','#00BFFF','black'), domain = factor(reactive_values$frontiers.live.list[[isolate(input$area_chosen)]]$year))
+      
+    
+    leafletProxy('map') %>%
+      addPolylines(
+        data = reactive_values$frontiers.live.list[[isolate(input$area_chosen)]],
+        color = ~frontierpalette(year),
+        weight = 3,
+        opacity = 1,
+        group = "frontiers"
+      ) %>% 
+        addLegend("topright", pal = frontierpalette, values = reactive_values$frontiers.live.list[[isolate(input$area_chosen)]]$year,
+                     title = "frontier",
+                     opacity = 1)
+      
+    } else {
+      
+    leafletProxy('map') %>%
       addPolylines(
         data = reactive_values$frontiers.live.list[[isolate(input$area_chosen)]],
         color = 'black',
         weight = 3,
         opacity = 1,
         group = "frontiers"
-      ) %>%
+      )
+      
+    }
+    
+    
+    leafletProxy('map') %>%
       addPolygons(
         data = ttwa %>% filter(ttwa11nm == isolate(input$area_chosen)),
         fill = F,
@@ -458,11 +529,13 @@ function(input, output, session) {
         opacity = 1,
         group = "ttwa_outline"
       ) %>% addLegend("topright", pal = palette, values = reactive_values$lsoa$`UK born %`,
-                     title = "UK born %",
-                     opacity = 1) %>%
+                      title = "UK born %",
+                      opacity = 1) %>%
       addScaleBar("topleft")
-    #Note this issue, hence not using formula syntax in legend
-    #https://community.rstudio.com/t/no-applicable-method-for-metadata-applied-to-an-object-of-class-null-with-leaflet-map/47720
+    
+    
+    
+    
     
     
     

@@ -66,7 +66,7 @@ census_select_panel <-
   function(){
      selectInput(
         inputId = 'census_select',
-        label = 'Select which Census to display: 2011, 2021 or the percentage-point difference between them (with 2021 frontiers shown)',
+        label = 'Select which Census to display: 2011, 2021 or the percentage-point difference between them (with frontiers shown from both years)',
         choices = c('2011','2021','difference'),
         selected = '2021',
         selectize = T
