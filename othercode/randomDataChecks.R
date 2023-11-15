@@ -813,7 +813,11 @@ l21 <- l21 %>% st_transform(crs = 'EPSG:4326')
 saveRDS(l21, 'data/lsoa2021.rds')
 
 
-#CHECK PACKAGE DEPENDENCIES, LOOKING FOR RGEOS
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK PACKAGE DEPENDENCIES, LOOKING FOR RGEOS----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 avail_pks <- available.packages()
 
 deps <- tools::package_dependencies(packages = avail_pks[c('shiny',
@@ -844,5 +848,51 @@ install.packages(c('shiny',
                    'knitr',
                    'toOrdinal',
                    'shinyWidgets'))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#CHECK UK BORN %S ARE CORRECT IN BOTH 2011 AND 2021----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#2021 I've checked in census 2021 interactive map, they appear correct.
+#But double check both. The differences seem very large.
+
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#MAKING / DISPLAYING COMBINED FRONTIER DIFF----
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#Noting that it's a list, so would have to combine elementwise to reprocess.
+#Which we already do in a function, yes?
+
+#Having already loaded these from the server code...
+frontiers.live.list.2011
+frontiers.live.list.2021
+
+#OK, list is in the same order for both, so working through isn't a problem...
+table(names(frontiers.live.list.2021)==names(frontiers.live.list.2011))
+
+#Test function
+debugonce(two_frontier_elements_combine)
+
+two_frontier_elements_combine(frontiers.live.list.2011[[1]], frontiers.live.list.2021[[1]])
+
+#2021 is null
+two_frontier_elements_combine(frontiers.live.list.2011[['Bideford']], frontiers.live.list.2021[['Bideford']])
+#Issue with this one...
+two_frontier_elements_combine(frontiers.live.list.2011[['Kingsbridge and Dartmouth']], frontiers.live.list.2021[['Kingsbridge and Dartmouth']])
+
+
+#now to run through all, and keep the names in the final list
+#Amazingly, the names have been kept! Win.
+#Arguably, should just save a copy of this to load
+result <- map2(frontiers.live.list.2011,frontiers.live.list.2021,two_frontier_elements_combine)
+
+
+
+
 
 

@@ -46,24 +46,42 @@ ttwa <- readRDS('data/ttwa.rds')
 
 
 #FRONTIERS IN LIST FORM, EACH ELEMENT A NAMED TTWA MATCHING NAMES IN TTWA AND LSOA ABOVE
-frontiers.original.list.2011 <- readRDS('data/frontiers_list_2011.rds')
-frontiers.original.list.2021 <- readRDS('data/frontiers_list_2021.rds')
+# frontiers.original.list.2011 <- readRDS('data/frontiers_list_2011.rds')
+# frontiers.original.list.2021 <- readRDS('data/frontiers_list_2021.rds')
+# 
+# #Filter phi, keep values above cutoff (in function so have the option to add being set by user)
+# #Function loaded in global.R
+# x <- proc.time()
+# frontiers.live.list.2011 <- filter.frontiers.by.phi(frontiers.original.list.2011, 1.96)
+# cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
+# 
+# x <- proc.time()
+# frontiers.live.list.2021 <- filter.frontiers.by.phi(frontiers.original.list.2021, 1.96)
+# cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
+# 
+# 
+# #Create a third frontiers list combining both
+# #Where frontiers are present in both, year = 'both'
+# #Otherwise year = 2011 or 2021
+# frontiers.live.list.both <- map2(frontiers.live.list.2011,frontiers.live.list.2021,two_frontier_elements_combine)
+# 
+# #Save all those processed frontier files - keep the code above so option to add user filtering of phi remains
+# #But for now, speed up boot times slightly
+# saveRDS(frontiers.live.list.2011,'data/frontiers_live_list_2011.rds')
+# saveRDS(frontiers.live.list.2021,'data/frontiers_live_list_2021.rds')
+# saveRDS(frontiers.live.list.both,'data/frontiers_live_list_both1.rds')
+
+
+frontiers.live.list.2011 <- readRDS('data/frontiers_live_list_2011.rds')
+frontiers.live.list.2021 <- readRDS('data/frontiers_live_list_2021.rds')
+frontiers.live.list.both <- readRDS('data/frontiers_live_list_both1.rds')
+
+
 
 ## postcode lookup 
 postcode_lookup <- readRDS('data/postcode lookup table.rds')
 
 postcode_options <- postcode_lookup$pcd_area
-
-#Filter phi, keep values above cutoff (in function so can be set by user)
-#Function loaded in global.R
-x <- proc.time()
-frontiers.live.list.2011 <- filter.frontiers.by.phi(frontiers.original.list.2011, 1.96)
-cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
-
-x <- proc.time()
-frontiers.live.list.2021 <- filter.frontiers.by.phi(frontiers.original.list.2021, 1.96)
-cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
-
 
 #SET THE LSOA / FRONTIERS TO BE DISPLAYED, OVERWRITE TO CHANGE
 # lsoa <- lsoa21
@@ -96,6 +114,11 @@ cat('Time to filter frontiers 2011 list: ', proc.time() - x,'\n')
 #   )
 
 #Begins with 2021 LSOAs, set in reactive_values just below
+
+#To change in one place
+# divergingcolours <- "RdYlBu"
+divergingcolours <- "BrBG"
+
 color_selected = "Blues"
 palette <- colorNumeric(palette = color_selected, reverse = F, domain = lsoa21$`UK born %`, na.color="transparent")
 
@@ -141,7 +164,7 @@ function(input, output, session) {
     #don't change if looking at difference, keep to diverging palette
     if (isolate(input$census_select!='difference')){
     
-      if(input$switch1 == TRUE) {color_selected <<- "RdYlBu"}
+      if(input$switch1 == TRUE) {color_selected <<- divergingcolours}
       if(input$switch1 == FALSE) {color_selected <<- "Blues"}
       
       # palette <<- colorNumeric(palette = color_selected, domain = both$`UK born %`, na.color="transparent")
@@ -241,8 +264,8 @@ function(input, output, session) {
       reactive_values$lsoa <- lsoa.diff
       reactive_values$frontiers.live.list <- frontiers.live.list.2021
       
-      # palette <<- colorNumeric(palette = "BrBG", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
-      palette <<- colorNumeric(palette = "RdYlBu", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+      palette <<- colorNumeric(palette = divergingcolours, domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
+      # palette <<- colorNumeric(palette = "RdYlBu", domain = reactive_values$lsoa$`UK born %`, na.color="transparent")
        
     }
     
