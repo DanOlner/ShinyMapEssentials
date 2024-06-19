@@ -78,6 +78,28 @@ frontiers.live.list.both <- readRDS('data/frontiers_live_list_both1.rds')
 
 
 
+
+#Frontiers from ACD from Eleanor
+# shpchk <- st_read('local/shapefile_eleanor/2011_Frontiers.shp')
+# 
+# #convert to 4326
+# shpchk <- st_transform(shpchk, 4326)
+# 
+# #filter down to "difference between frontiers is more than 5%"
+# # shpchk <- shpchk %>% filter(AbD5_SF == 1)
+# shpchk <- shpchk %>% filter(AbsDif > 1.75)
+# 
+# #Split into list
+# Front_list <- split(shpchk, f = shpchk$TTWA_Nm)
+# 
+# saveRDS(Front_list,'data/frontiers_absolutedifference_2011.rds')
+
+
+frontiers.acd.list2011 <- readRDS('data/frontiers_absolutedifference_2011.rds')
+
+#JUST WRITE OVER FRONTIERS.LIVE.LIST FOR NOW
+frontiers.live.list.2021 <- frontiers.acd.list2011
+
 ## postcode lookup 
 postcode_lookup <- readRDS('data/postcode lookup table.rds')
 
